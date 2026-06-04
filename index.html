@@ -714,7 +714,7 @@
   <div id="stardust">✦ スターダスト: 100000</div>
   <div class="overlay" id="ov"></div>
 
-  <button id="create-btn" onclick="openCreateModal()">🔭 未知の惑星を探索</button>
+  <button id="create-btn" onclick="openCreateModal()">🔭 未解の惑星を探索</button>
 
   <div id="place-mode-ui">
     <div id="place-guide">📍 場所をクリック/タップして選んでください</div>
@@ -722,25 +722,30 @@
     <div id="place-toast"></div>
     <div id="place-actions" onmouseup="event.stopPropagation()">
       <button id="place-cancel" onclick="cancelPlaceMode()">← 戻る</button>
-      <button id="place-confirm" onclick="confirmPlace()">🌍 この惑星を探索 ✓</button>
+      <button id="place-confirm" onclick="confirmPlace()">🌍 座標確定 ✓</button>
     </div>
   </div>
 
   <div id="modal-bg">
     <div id="modal">
       <button id="modal-close" onclick="closeModal()">✕</button>
-      <div class="modal-title">🔭 未知の惑星を発見</div>
+      <div class="modal-title">🔭 惑星を調査</div>
       <div class="modal-sub" id="modal-sub-text">STEP 1 / 3</div>
 
       <div class="step active" id="step1">
-        <div class="step-label">文明はありますか？</div>
+        <div class="step-label">文明は築けそうですか？</div>
         <div class="civ-cards">
-          <div class="civ-card" id="civ-yes" onclick="selectCiv(true)">
+          <div class="civ-card" id="civ-yes" onclick="selectCiv('civilization')">
             <div class="civ-icon">🌕</div>
             <div class="civ-name">文明あり</div>
             <div class="civ-desc">コンテンツを投稿できる。訪問者が増えて人口が育つ。</div>
           </div>
-          <div class="civ-card" id="civ-no" onclick="selectCiv(false)">
+          <div class="civ-card" id="civ-declining" onclick="selectCiv('declining')">
+            <div class="civ-icon">🌘</div>
+            <div class="civ-name">滅びゆく文明</div>
+            <div class="civ-desc">栄えた文明から切り離される。訪問者数で消滅へ。</div>
+          </div>
+          <div class="civ-card" id="civ-no" onclick="selectCiv('barren')">
             <div class="civ-icon">🌑</div>
             <div class="civ-name">文明なし</div>
             <div class="civ-desc">フレーバーテキストが生成される。隣接する惑星と合体する。</div>
@@ -846,8 +851,8 @@
         </div>
 
         <div class="modal-actions">
-          <button class="m-btn secondary" onclick="enterPlaceMode()">← 場所を変える</button>
-          <button class="m-btn primary" onclick="createPlanet()">🌌 探索する</button>
+          <button class="m-btn secondary" onclick="enterPlaceMode()">← 戻る</button>
+          <button class="m-btn primary" onclick="createPlanet()">🌌 調査完了</button>
         </div>
       </div>
 
@@ -1683,7 +1688,8 @@ function updateZoomDisplay() {
 // ===== マウス操作 =====
 
 app.addEventListener('mousedown', e => {
-  if (curIdx !== -1) return;
+  const modalOpen = document.getElementById('modal-bg').classList.contains('active');
+  if (curIdx !== -1 || modalOpen) return;
   dragging = true;
   wasDragging = false;
   dragX = e.clientX - offX;
@@ -1875,10 +1881,11 @@ function toggleTag(tag, el) {
   }
 }
 
-function selectCiv(hasCiv) {
-  form.civ = hasCiv;
-  document.getElementById('civ-yes').classList.toggle('selected', hasCiv);
-  document.getElementById('civ-no').classList.toggle('selected', !hasCiv);
+function selectCiv(civType) {
+  form.civType = civType;
+  document.getElementById('civ-yes').classList.toggle('selected', civType === 'civilization');
+  document.getElementById('civ-declining').classList.toggle('selected', civType === 'declining');
+  document.getElementById('civ-no').classList.toggle('selected', civType === 'barren');
   checkStep1();
 }
 
@@ -1891,7 +1898,7 @@ function selectSize(n) {
 }
 
 function checkStep1() {
-  document.getElementById('step1-next').disabled = !(form.civ !== null && form.size !== null);
+  document.getElementById('step1-next').disabled = !(form.civType !== null && form.size !== null);
 }
 
 function onNameInput() {
@@ -1933,12 +1940,13 @@ function enterPlaceMode() {
   const sz = SIZE_OCCUPANCY[form.size] / 2 * 10 * 2;  // 直径（GRID_SCALEに依存しない）
   preview.style.width = sz + 'px';
   preview.style.height = sz + 'px';
-  preview.style.background = form.civ
-    ? `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`
-    : `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`;
-  preview.style.boxShadow = form.civ
-    ? `0 0 18px 5px ${color}66`
-    : `0 0 8px 2px ${color}33`;
+  const isBarren = form.civType === 'barren';
+  preview.style.background = isBarren
+    ? `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`
+    : `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`;
+  preview.style.boxShadow = isBarren
+    ? `0 0 8px 2px ${color}33`
+    : `0 0 18px 5px ${color}66`;
   preview.style.opacity = '0.6';
   
   // 「ここに作る」ボタンは非表示（場所選択後に表示）
@@ -1990,21 +1998,23 @@ function confirmPlace() {
 function buildConfirm() {
   const sd = SIZE_DATA[form.size];
   const color = form._color;
+  const isBarren = form.civType === 'barren';
   
   const orb = document.getElementById('confirm-orb');
-  orb.style.background = form.civ
-    ? `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`
-    : `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`;
-  orb.style.boxShadow = form.civ
-    ? `0 0 18px 5px ${color}66, 0 0 40px 12px ${color}22`
-    : `0 0 8px 2px ${color}33`;
+  orb.style.background = isBarren
+    ? `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`
+    : `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`;
+  orb.style.boxShadow = isBarren
+    ? `0 0 8px 2px ${color}33`
+    : `0 0 18px 5px ${color}66, 0 0 40px 12px ${color}22`;
   
   document.getElementById('confirm-name').textContent = form.name || '（名前未入力）';
-  document.getElementById('confirm-id').textContent = gridToID(form._placedGridX, form._placedGridY) + (form.civ ? '' : ' · 文明なし');
+  document.getElementById('confirm-id').textContent = gridToID(form._placedGridX, form._placedGridY) + (isBarren ? ' · 文明なし' : '');
   
   const tagText = form.tags.length > 0 ? form.tags.join(' / ') : 'タグなし';
+  const civLabel = form.civType === 'civilization' ? '文明あり' : form.civType === 'declining' ? '滅びゆく文明' : '文明なし';
   document.getElementById('confirm-summary').innerHTML =
-    `${sd.icon} ${sd.name}惑星 · ${form.civ ? '文明あり' : '文明なし'}<br>` +
+    `${sd.icon} ${sd.name}惑星 · ${civLabel}<br>` +
     `タグ: ${tagText}`;
   
   document.getElementById('confirm-stella').textContent = sd.stella.toLocaleString();
@@ -2081,6 +2091,14 @@ async function loadPlanetsFromDB() {
 function createPlanet() {
   const sd = SIZE_DATA[form.size];
   const color = form._color;
+  const isBarren = form.civType === 'barren';
+  
+  let defaultDesc = 'まだ説明がありません。';
+  if (form.civType === 'declining') {
+    defaultDesc = '栄えた文明から切り離された。訪問者数で消滅へ。';
+  } else if (isBarren) {
+    defaultDesc = 'フレーバーテキストが刻まれている...';
+  }
   
   const newPlanet = {
     id: gridToID(form._placedGridX, form._placedGridY),
@@ -2089,11 +2107,12 @@ function createPlanet() {
     color: color,
     gridX: form._placedGridX,
     gridY: form._placedGridY,
-    desc: form.desc || (form.civ ? 'まだ説明がありません。' : 'フレーバーテキストが刻まれている...'),
+    desc: form.desc || defaultDesc,
     tags: [...form.tags],
-    population: form.civ ? 100 : 0,
-    barren: !form.civ,
-    pop: form.civ ? 100 : 0  // 互換性のため両方つける
+    population: isBarren ? 0 : 100,
+    barren: isBarren,
+    civType: form.civType,  // 文明タイプを保存
+    pop: isBarren ? 0 : 100  // 互換性のため両方つける
   };
   
   planets.push(newPlanet);
@@ -2124,13 +2143,14 @@ function createPlanet() {
 }
 
 function openCreateModal() {
-  form = {civ: null, size: null, tags: [], name: '', desc: '', _color: '#4a9edd', _placedGridX: null, _placedGridY: null};
+  form = {civType: null, size: null, tags: [], name: '', desc: '', _color: '#4a9edd', _placedGridX: null, _placedGridY: null};
   currentStep = 1;
   document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); s.style.display = ''; });
   document.getElementById('step1').classList.add('active');
   document.getElementById('modal-success').style.display = 'none';
   document.getElementById('modal-sub-text').textContent = 'STEP 1 / 3';
   document.getElementById('civ-yes').classList.remove('selected');
+  document.getElementById('civ-declining').classList.remove('selected');
   document.getElementById('civ-no').classList.remove('selected');
   for (let i = 1; i <= 5; i++) document.getElementById('sz-' + i).classList.remove('selected');
   document.getElementById('f-name').value = '';
