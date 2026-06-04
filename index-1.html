@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宇宙創造プラットフォーム v4</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+    
+    #app { width: 100vw; height: 100vh; position: relative; overflow: hidden; cursor: grab; }
+    #app.grabbing { cursor: grabbing; }
+    
+    canvas#starfield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    canvas#bhCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    canvas#forbiddenCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    
+    #map-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    
+    .planet {
+      position: absolute;
+      border-radius: 50%;
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+      transition: transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .planet:hover { transform: translate(-50%, -50%) scale(1.12); z-index: 10; }
+    .planet-label {
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 11px;
+      color: rgba(255,255,255,0.65);
+      pointer-events: none;
+      letter-spacing: 1px;
+    }
+    
+    #planet-view {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    #planet-view.active { display: flex; }
+    
+    .pv-orb {
+      border-radius: 50%;
+      margin-bottom: 24px;
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.05)} }
+    
+    .pv-name { color: #fff; font-size: 22px; font-weight: bold; letter-spacing: 3px; margin-bottom: 6px; }
+    .pv-id { color: rgba(255,255,255,0.35); font-size: 11px; margin-bottom: 14px; letter-spacing: 2px; }
+    .pv-pop { color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 14px; }
+    .pv-desc { color: rgba(255,255,255,0.7); font-size: 13px; text-align: center; max-width: 300px; line-height: 1.7; margin-bottom: 18px; }
+    .pv-tags { margin-bottom: 20px; }
+    .pv-tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; margin: 3px; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.65); }
+    .pv-actions { display: flex; gap: 12px; }
+    .pv-btn { padding: 9px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); font-size: 12px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
+    .pv-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.5); }
+    .pv-btn.visit { background: rgba(100,180,255,0.15); border-color: rgba(100,180,255,0.5); color: #88ccff; }
+    .pv-btn.visit:hover { background: rgba(100,180,255,0.3); }
+    
+    .swipe-hint { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.25); font-size: 11px; display: flex; gap: 20px; letter-spacing: 1px; }
+    
+    .pv-content-item { padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); font-size: 11px; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; }
+    .pv-content-item:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
+    .pv-content-item-title { color: rgba(255,255,255,0.8); font-weight: bold; margin-bottom: 2px; }
+    .pv-content-item-type { font-size: 9px; color: rgba(255,255,255,0.35); }
+    
+    #back-btn { position: absolute; top: 18px; left: 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.55); padding: 7px 16px; border-radius: 16px; font-size: 11px; cursor: pointer; letter-spacing: 1px; z-index: 200; display: none; transition: all 0.2s; }
+    #back-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    #back-btn.visible { display: block; }
+    
+    #zoom-controls { position: absolute; bottom: 18px; right: 18px; display: flex; flex-direction: column; gap: 5px; z-index: 50; }
+    .zoom-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .zoom-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    
+    #mode-label { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.25); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; z-index: 50; pointer-events: none; display: none; }
+    #stardust { position: absolute; top: 18px; right: 18px; color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 1px; z-index: 50; }
+    
+    #cursor-coords { position: absolute; top: 18px; left: 18px; color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 1px; z-index: 50; padding: 4px 12px; background: rgba(8,10,20,0.5); border-radius: 8px; }
+    
+    .overlay { position: absolute; top:0;left:0;width:100%;height:100%; background:#000; opacity:0; pointer-events:none; z-index:90; transition: opacity 0.25s; }
+    .overlay.on { opacity:1; }
+    
+    #create-btn {
+      position: absolute; bottom: 18px; left: 18px;
+      background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.4);
+      color: #88ccff; padding: 9px 18px; border-radius: 20px;
+      font-size: 11px; cursor: pointer; letter-spacing: 1px;
+      z-index: 50; font-family: 'Courier New', monospace;
+      transition: all 0.2s;
+    }
+    #create-btn:hover { background: rgba(100,180,255,0.25); border-color: rgba(100,180,255,0.7); }
+    
+    #place-mode-ui {
+      display: none;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 200; pointer-events: none;
+    }
+    #place-mode-ui.active { display: block; }
+    
+    #app.placing { cursor: crosshair !important; }
+    #app.placing .planet { pointer-events: none; }
+    
+    #place-guide {
+      pointer-events: all;
+      position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+      background: rgba(8,10,20,0.9); border: 1px solid rgba(100,180,255,0.35);
+      border-radius: 20px; padding: 9px 20px;
+      color: rgba(100,180,255,0.9); font-size: 11px; letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    
+    #place-preview {
+      position: absolute; border-radius: 50%;
+      pointer-events: none; display: none;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.15s;
+      z-index: 210;
+    }
+    
+    #place-actions {
+      pointer-events: all;
+      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 12px;
+    }
+    #place-cancel {
+      padding: 10px 22px; border-radius: 20px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.6); font-size: 12px; cursor: pointer;
+      font-family: 'Courier New', monospace; letter-spacing: 1px; transition: all 0.2s;
+    }
+    #place-cancel:hover { background: rgba(255,255,255,0.12); }
+    #place-confirm {
+      padding: 10px 22px; border-radius: 20px;
+      background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.5);
+      color: #88ccff; font-size: 12px; cursor: pointer;
+      font-family: 'Courier New', monospace; letter-spacing: 1px; transition: all 0.2s;
+      display: none;
+    }
+    #place-confirm:hover { background: rgba(100,180,255,0.28); }
+    #place-confirm.confirmed { 
+      background: rgba(100,180,255,0.35); 
+      box-shadow: 0 0 20px rgba(100,180,255,0.5);
+    }
+    
+    #place-toast {
+      pointer-events: none;
+      position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: rgba(255,60,60,0.15); border: 1px solid rgba(255,60,60,0.4);
+      color: rgba(255,120,120,0.9); border-radius: 12px; padding: 8px 18px;
+      font-size: 11px; letter-spacing: 1px; opacity: 0; transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    #place-toast.show { opacity: 1; }
+    
+    #modal-bg {
+      position: absolute; top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      z-index: 300; display: none; align-items: center; justify-content: center;
+    }
+    #modal-bg.active { display: flex; }
+    
+    #modal {
+      background: rgba(8,10,20,0.97);
+      border: 1px solid rgba(100,180,255,0.2);
+      border-radius: 16px;
+      width: min(480px, 92vw);
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 32px 28px;
+      position: relative;
+      box-shadow: 0 0 60px rgba(100,180,255,0.08);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100,180,255,0.2) transparent;
+    }
+    
+    .modal-title {
+      color: #fff; font-size: 15px; letter-spacing: 3px;
+      margin-bottom: 6px; text-align: center;
+    }
+    .modal-sub {
+      color: rgba(255,255,255,0.3); font-size: 10px; letter-spacing: 2px;
+      text-align: center; margin-bottom: 28px;
+    }
+    
+    .step { display: none; }
+    .step.active { display: block; }
+    
+    .step-label {
+      color: rgba(100,180,255,0.6); font-size: 10px; letter-spacing: 2px;
+      margin-bottom: 20px; text-align: center;
+    }
+    
+    .civ-cards { display: flex; gap: 14px; margin-bottom: 8px; }
+    .civ-card {
+      flex: 1; padding: 18px 12px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer; text-align: center; transition: all 0.2s;
+    }
+    .civ-card:hover { border-color: rgba(100,180,255,0.4); background: rgba(100,180,255,0.06); }
+    .civ-card.selected { border-color: rgba(100,180,255,0.7); background: rgba(100,180,255,0.12); }
+    .civ-card .civ-icon { font-size: 28px; margin-bottom: 10px; }
+    .civ-card .civ-name { color: #fff; font-size: 12px; letter-spacing: 1px; margin-bottom: 6px; }
+    .civ-card .civ-desc { color: rgba(255,255,255,0.35); font-size: 10px; line-height: 1.6; }
+    
+    .size-cards { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .size-card {
+      flex: 1; min-width: 70px; padding: 12px 8px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer; text-align: center; transition: all 0.2s;
+    }
+    .size-card:hover { border-color: rgba(100,180,255,0.4); background: rgba(100,180,255,0.06); }
+    .size-card.selected { border-color: rgba(100,180,255,0.7); background: rgba(100,180,255,0.12); }
+    .size-card .sz-icon { font-size: 20px; margin-bottom: 6px; }
+    .size-card .sz-name { color: #fff; font-size: 10px; letter-spacing: 1px; margin-bottom: 4px; }
+    .size-card .sz-cost { color: rgba(255,255,255,0.35); font-size: 9px; }
+    
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; color: rgba(255,255,255,0.45); font-size: 10px;
+      letter-spacing: 2px; margin-bottom: 7px;
+    }
+    .field input, .field textarea {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+      color: #fff; font-family: 'Courier New', monospace; font-size: 12px;
+      padding: 10px 12px; outline: none; transition: border-color 0.2s;
+      resize: none;
+    }
+    .field input:focus, .field textarea:focus { border-color: rgba(100,180,255,0.5); }
+    .field input::placeholder, .field textarea::placeholder { color: rgba(255,255,255,0.2); }
+    .char-count { text-align: right; color: rgba(255,255,255,0.2); font-size: 10px; margin-top: 4px; }
+    
+    .tag-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+    .tag-opt {
+      padding: 5px 12px; border-radius: 12px; font-size: 11px;
+      border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5);
+      cursor: pointer; transition: all 0.2s; font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
+    .tag-opt:hover { border-color: rgba(100,180,255,0.4); color: rgba(100,180,255,0.8); }
+    .tag-opt.selected { border-color: rgba(100,180,255,0.7); color: #88ccff; background: rgba(100,180,255,0.1); }
+    
+    .cost-box {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;
+      display: flex; justify-content: space-around;
+    }
+    .cost-item { text-align: center; }
+    .cost-item .cost-label { color: rgba(255,255,255,0.3); font-size: 9px; letter-spacing: 1px; margin-bottom: 5px; }
+    .cost-item .cost-val { color: #88ccff; font-size: 14px; letter-spacing: 1px; }
+    
+    .modal-actions { display: flex; gap: 10px; margin-top: 8px; }
+    .m-btn {
+      flex: 1; padding: 11px; border-radius: 12px; font-size: 12px;
+      cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace;
+      transition: all 0.2s;
+    }
+    .m-btn.secondary {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.5);
+    }
+    .m-btn.secondary:hover { background: rgba(255,255,255,0.09); }
+    .m-btn.primary {
+      background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.45);
+      color: #88ccff;
+    }
+    .m-btn.primary:hover { background: rgba(100,180,255,0.28); }
+    .m-btn.primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    
+    #modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: none; border: none; color: rgba(255,255,255,0.25);
+      font-size: 18px; cursor: pointer; padding: 4px 8px;
+      transition: color 0.2s;
+    }
+    #modal-close:hover { color: rgba(255,255,255,0.7); }
+    
+    #modal-success {
+      text-align: center; padding: 20px 0;
+    }
+    .success-orb {
+      border-radius: 50%; margin: 0 auto 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .success-msg { color: #fff; font-size: 14px; letter-spacing: 2px; margin-bottom: 8px; }
+    .success-sub { color: rgba(255,255,255,0.35); font-size: 11px; line-height: 1.7; }
+    
+    /* スマホ対応 */
+    @media (max-width: 600px) {
+      #zoom-controls { bottom: 80px !important; }
+      #create-btn { bottom: 80px !important; }
+      #stardust { bottom: 20px !important; right: 20px !important; }
+      #cursor-coords { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <canvas id="starfield"></canvas>
+  <canvas id="bhCanvas"></canvas>
+  <canvas id="forbiddenCanvas"></canvas>
+  <div id="map-view"></div>
+
+  <div id="planet-view" style="display: none;">
+    <div class="pv-orb" id="pv-orb" style="width:120px;height:120px;"></div>
+    <div class="pv-name" id="pv-name"></div>
+    <div class="pv-id" id="pv-id"></div>
+    <div class="pv-pop" id="pv-pop"></div>
+    <div class="pv-desc" id="pv-desc"></div>
+    <div class="pv-tags" id="pv-tags"></div>
+    
+    <div class="pv-actions">
+      <button class="pv-btn visit" onclick="visitPlanet()" style="flex: 1;">訪問</button>
+      <button class="pv-btn" onclick="backToMap()" style="flex: 1;">マップ</button>
+    </div>
+    <div class="swipe-hint">
+      <span>← スワイプで移動 →</span>
+    </div>
+  </div>
+
+  <!-- コンテンツ表示ページ -->
+  <div id="planet-content-page" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; z-index: 100; overflow-y: auto;">
+    <div style="position: sticky; top: 0; background: rgba(0,0,0,0.95); padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+      <button onclick="backFromContent()" style="background: none; border: none; color: rgba(255,255,255,0.6); font-size: 14px; cursor: pointer;">← 惑星ビュー</button>
+      <div id="cc-planet-name" style="color: #fff; font-size: 14px; letter-spacing: 1px;"></div>
+      <div style="width: 40px;"></div>
+    </div>
+    
+    <div style="flex: 1; padding: 20px; overflow-y: auto;">
+      <div style="color: rgba(255,255,255,0.4); font-size: 12px; letter-spacing: 1px; margin-bottom: 16px;">🔥 流行中のコンテンツ</div>
+      <div id="cc-content-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+    
+    <div style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 10px;">
+      <button onclick="openAddContentPrompt()" style="flex: 1; padding: 12px; border-radius: 12px; background: rgba(100,200,100,0.15); border: 1px solid rgba(100,200,100,0.4); color: #88ff88; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace;">➕ 追加</button>
+      <button onclick="backFromContent()" style="flex: 1; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace;">← 戻る</button>
+    </div>
+  </div>
+
+  <!-- コンテンツ追加モーダル -->
+  <div id="add-content-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 200; align-items: center; justify-content: center;">
+    <div style="background: linear-gradient(135deg, rgba(30,40,60,0.95), rgba(20,30,50,0.95)); border: 1px solid rgba(100,200,255,0.2); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
+      <div style="font-size: 16px; color: #fff; margin-bottom: 24px; letter-spacing: 2px; font-weight: 500;">✏️ コンテンツを追加</div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px; letter-spacing: 1px;">タイトル *</label>
+        <input type="text" id="ac-title" placeholder="e.g. 素晴らしい発見" maxlength="50" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(100,200,255,0.3); border-radius: 8px; color: #fff; font-size: 13px; box-sizing: border-box; font-family: inherit;">
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px; letter-spacing: 1px;">説明 *</label>
+        <textarea id="ac-description" placeholder="このコンテンツについて説明してください" maxlength="300" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(100,200,255,0.3); border-radius: 8px; color: #fff; font-size: 13px; box-sizing: border-box; font-family: inherit; resize: vertical; min-height: 80px; line-height: 1.4;"></textarea>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px; letter-spacing: 1px;">URL（オプション）</label>
+        <input type="text" id="ac-url" placeholder="https://example.com" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(100,200,255,0.3); border-radius: 8px; color: #fff; font-size: 13px; box-sizing: border-box; font-family: inherit;">
+      </div>
+      
+      <div style="display: flex; gap: 10px;">
+        <button onclick="closeAddContentModal()" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s;">キャンセル</button>
+        <button onclick="submitAddContent()" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(100,200,255,0.2); border: 1px solid rgba(100,200,255,0.5); color: #64c8ff; font-size: 12px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; font-weight: 500;">追加 ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <button id="back-btn" onclick="backToMap()">← 宇宙マップ</button>
+  <div id="zoom-controls">
+    <div id="zoom-display" style="text-align: center; color: rgba(255,255,255,0.5); font-size: 10px; letter-spacing: 1px; margin-bottom: 5px;">1.0×</div>
+    <button class="zoom-btn" onclick="zoomIn()">+</button>
+    <button class="zoom-btn" onclick="zoomOut()">−</button>
+  </div>
+  <div id="mode-label">宇宙マップ</div>
+  <div id="cursor-coords">X0 Y0</div>
+  <div id="stardust">✦ スターダスト: 100000</div>
+  <div class="overlay" id="ov"></div>
+
+  <button id="create-btn" onclick="openCreateModal()">🔭 未知の惑星を探索</button>
+
+  <div id="place-mode-ui">
+    <div id="place-guide">📍 場所をクリック/タップして選んでください</div>
+    <div id="place-preview"></div>
+    <div id="place-toast"></div>
+    <div id="place-actions" onmouseup="event.stopPropagation()">
+      <button id="place-cancel" onclick="cancelPlaceMode()">← 戻る</button>
+      <button id="place-confirm" onclick="confirmPlace()">🌍 この惑星を探索 ✓</button>
+    </div>
+  </div>
+
+  <div id="modal-bg">
+    <div id="modal">
+      <button id="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-title">🔭 未知の惑星を発見</div>
+      <div class="modal-sub" id="modal-sub-text">STEP 1 / 3</div>
+
+      <div class="step active" id="step1">
+        <div class="step-label">文明はありますか？</div>
+        <div class="civ-cards">
+          <div class="civ-card" id="civ-yes" onclick="selectCiv(true)">
+            <div class="civ-icon">🌕</div>
+            <div class="civ-name">文明あり</div>
+            <div class="civ-desc">コンテンツを投稿できる。訪問者が増えて人口が育つ。</div>
+          </div>
+          <div class="civ-card" id="civ-no" onclick="selectCiv(false)">
+            <div class="civ-icon">🌑</div>
+            <div class="civ-name">文明なし</div>
+            <div class="civ-desc">フレーバーテキストが生成される。隣接する惑星と合体する。</div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:24px">
+          <label>惑星のサイズ</label>
+          <div class="size-cards">
+            <div class="size-card" id="sz-1" onclick="selectSize(1)">
+              <div class="sz-icon">🌑</div>
+              <div class="sz-name">極小</div>
+              <div class="sz-cost">100 ⭐</div>
+            </div>
+            <div class="size-card" id="sz-2" onclick="selectSize(2)">
+              <div class="sz-icon">🌒</div>
+              <div class="sz-name">小</div>
+              <div class="sz-cost">300 ⭐</div>
+            </div>
+            <div class="size-card" id="sz-3" onclick="selectSize(3)">
+              <div class="sz-icon">🌕</div>
+              <div class="sz-name">中</div>
+              <div class="sz-cost">1,000 ⭐</div>
+            </div>
+            <div class="size-card" id="sz-4" onclick="selectSize(4)">
+              <div class="sz-icon">🌟</div>
+              <div class="sz-name">大</div>
+              <div class="sz-cost">5,000 ⭐</div>
+            </div>
+            <div class="size-card" id="sz-5" onclick="selectSize(5)">
+              <div class="sz-icon">☀️</div>
+              <div class="sz-name">巨大</div>
+              <div class="sz-cost">10,000 ⭐</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="m-btn secondary" onclick="closeModal()">キャンセル</button>
+          <button class="m-btn primary" id="step1-next" onclick="goStep(2)" disabled>次へ →</button>
+        </div>
+      </div>
+
+      <div class="step" id="step2">
+        <div class="step-label">惑星の情報を入力してください</div>
+
+        <div class="field">
+          <label>惑星の名前 *</label>
+          <input type="text" id="f-name" placeholder="アルカディア星" maxlength="30" oninput="onNameInput()">
+        </div>
+
+        <div class="field">
+          <label>惑星の色 *</label>
+          <div style="display: flex; gap: 12px;">
+            <div style="flex: 1;">
+              <div style="color: rgba(255,255,255,0.6); font-size: 10px; margin-bottom: 8px; letter-spacing: 1px;">カラーピック</div>
+              <input type="color" id="color-picker" value="#4a9edd" oninput="onColorPickerChange(this.value)" style="width: 100%; height: 40px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;">
+            </div>
+            <div style="flex: 1;">
+              <div style="color: rgba(255,255,255,0.6); font-size: 10px; margin-bottom: 8px; letter-spacing: 1px;">ランダム</div>
+              <button id="random-color-btn" class="m-btn secondary" onclick="setRandomColor()" style="width: 100%; height: 40px;">🎲 ランダム</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>一言紹介（任意・50文字以内）</label>
+          <textarea id="f-desc" rows="2" placeholder="この惑星について一言..." maxlength="50" oninput="onDescInput()"></textarea>
+          <div class="char-count"><span id="desc-count">0</span> / 50</div>
+        </div>
+
+        <div class="field">
+          <label>カテゴリタグ（複数選択可）</label>
+          <div class="tag-grid" id="tag-grid"></div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="m-btn secondary" onclick="goStep(1)">← 戻る</button>
+          <button class="m-btn primary" id="step2-next" onclick="enterPlaceMode()" disabled>場所を選ぶ →</button>
+        </div>
+      </div>
+
+      <div class="step" id="step3">
+        <div class="step-label">内容を確認して惑星を作成してください</div>
+
+        <div style="text-align:center; margin-bottom:20px">
+          <div id="confirm-orb" style="width:80px;height:80px;border-radius:50%;margin:0 auto 14px;animation:pulse 3s ease-in-out infinite;"></div>
+          <div style="color:#fff;font-size:16px;letter-spacing:2px;" id="confirm-name"></div>
+          <div style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin-top:4px;" id="confirm-id"></div>
+        </div>
+
+        <div style="color:rgba(255,255,255,0.45);font-size:11px;line-height:1.8;margin-bottom:20px;text-align:center;" id="confirm-summary"></div>
+
+        <div class="cost-box">
+          <div class="cost-item">
+            <div class="cost-label">⭐ ステラ消費</div>
+            <div class="cost-val" id="confirm-stella">-</div>
+          </div>
+          <div class="cost-item">
+            <div class="cost-label">✦ スターダスト消費</div>
+            <div class="cost-val" id="confirm-dust">-</div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="m-btn secondary" onclick="enterPlaceMode()">← 場所を変える</button>
+          <button class="m-btn primary" onclick="createPlanet()">🌌 探索する</button>
+        </div>
+      </div>
+
+      <div id="modal-success" style="display:none">
+        <div class="success-orb" id="success-orb" style="width:100px;height:100px;"></div>
+        <div class="success-msg" id="success-name"></div>
+        <div class="success-sub" id="success-sub"></div>
+        <div style="margin-top:24px">
+          <button class="m-btn primary" onclick="closeModal()" style="max-width:200px;margin:0 auto;display:block;">宇宙マップへ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 宇宙手帳パネル -->
+  <button id="handbook-btn" style="position: absolute; top: 18px; right: 18px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; padding: 9px 16px; border-radius: 20px; font-size: 11px; cursor: pointer; letter-spacing: 1px; z-index: 50; font-family: 'Courier New', monospace; transition: all 0.2s;">📖 宇宙手帳</button>
+
+  <div id="handbook-panel" style="position: fixed; top: 0; right: 0; width: 300px; height: 100vh; background: rgba(8,10,20,0.98); border-left: 1px solid rgba(100,180,255,0.3); transform: translateX(100%); transition: transform 0.3s ease; z-index: 60; overflow-y: auto; padding: 20px; box-sizing: border-box;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div style="color: #fff; font-size: 14px; letter-spacing: 2px;">📖 宇宙手帳</div>
+      <button id="handbook-close" style="background: none; border: none; color: rgba(255,255,255,0.4); font-size: 18px; cursor: pointer; padding: 0;">✕</button>
+    </div>
+    
+    <div id="handbook-list" style="display: flex; flex-direction: column; gap: 8px;">
+      <!-- 惑星リストがここに動的に挿入される -->
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== Supabase 設定 =====
+const SUPABASE_URL = 'https://zkcahbejsaegfpxlunkc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ecBow9OY0mHm_GI55eQXSw_6Bb3vTSH';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ===== 設計ベースの実装 =====
+
+// ===== 定数定義 =====
+const GRID_SCALE = 1;  // 1グリッド = 1ピクセル（座標が10倍細かくなる）  // 1グリッド = 10ピクセル（ズーム1倍時）
+const CHUNK_SIZE = 100; // 1チャンク = 100×100 グリッド
+const BLACKHOLE_FORBIDDEN_DISTANCE = 14;  // ブラックホール禁止距離（大の2倍）
+const ZOOM_LEVELS = [100, 125, 150, 175, 200, 250, 300];
+
+// 占有マス定義
+const SIZE_OCCUPANCY = {1: 1, 2: 3, 3: 5, 4: 7, 5: 9};
+
+// サイズデータ
+const SIZE_DATA = {
+  1: { icon:'🌑', name:'極小', stella:100 },
+  2: { icon:'🌒', name:'小', stella:300 },
+  3: { icon:'🌕', name:'中', stella:1000 },
+  4: { icon:'🌟', name:'大', stella:5000 },
+  5: { icon:'☀️', name:'巨大', stella:10000 },
+};
+
+// プリセット色
+const PLANET_COLORS = [
+  '#4a9edd','#e07830','#8855dd','#44ddaa','#ddcc44',
+  '#cc6655','#55aa66','#6688bb','#dd5599','#44bbcc'
+];
+
+// タグ
+const AVAILABLE_TAGS = [
+  '小説','漫画','イラスト','動画','Vlog','アニメ','推し活',
+  'ゲーム','音楽','SF','ファンタジー','ホラー','日常',
+  'ショップ','雑貨','食品','ハンドメイド','その他'
+];
+
+// ===== グローバル変数 =====
+let planets = [
+  {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true}
+];
+
+// ブラックホール描画
+let bhCanvas = null;
+let bhCtx = null;
+let bhParticles = [];
+let bhRotation = 0;
+
+let chunkMap = {};  // チャンク管理用マップ
+let zoom = 1, offX = 0, offY = 0;
+
+// ページロード時に (0,0) が中央に来るように初期化
+async function initializeMap() {
+  offX = window.innerWidth / 2;
+  offY = window.innerHeight / 2;
+  
+  // DBから既存の惑星を読み込み
+  const dbPlanets = await loadPlanetsFromDB();
+  if (dbPlanets.length > 0) {
+    planets = dbPlanets;
+    // チャンク構造も再構築
+    planets.forEach(p => addToChunk(p));
+    console.log(`✅ 起動時に ${planets.length} 個の惑星を読み込みました`);
+  }
+}
+let dragging = false, dragX = 0, dragY = 0, wasDragging = false;
+let placingMode = false;
+let placeSelectedGridX = null, placeSelectedGridY = null;
+let placeMouseGridX = null, placeMouseGridY = null;
+let curIdx = -1;
+let toastTimer = null;
+
+// フォーム
+let form = {civ: null, size: null, tags: [], name: '', desc: '', _color: null, _placedGridX: null, _placedGridY: null};
+let currentStep = 1;
+
+const app = document.getElementById('app');
+const mapView = document.getElementById('map-view');
+const planetView = document.getElementById('planet-view');
+const backBtn = document.getElementById('back-btn');
+const modeLabel = document.getElementById('mode-label');
+const ov = document.getElementById('ov');
+
+// ===== ユーティリティ関数 =====
+
+function lighten(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgb(${Math.min(255,r+90)},${Math.min(255,g+90)},${Math.min(255,b+90)})`;
+}
+
+function planetBg(p) {
+  return p.barren
+    ? `radial-gradient(circle at 35% 35%, ${p.color}77, ${p.color}22)`
+    : `radial-gradient(circle at 30% 30%, ${lighten(p.color)}, ${p.color} 60%, ${p.color}bb)`;
+}
+
+function planetGlow(p) {
+  return p.barren
+    ? `0 0 8px 2px ${p.color}33`
+    : `0 0 18px 5px ${p.color}66, 0 0 40px 12px ${p.color}22`;
+}
+
+function gridToID(gridX, gridY) {
+  return `X${gridX}-Y${gridY}`;
+}
+
+function randomColor() {
+  return PLANET_COLORS[Math.floor(Math.random() * PLANET_COLORS.length)];
+}
+
+// ===== チャンク管理 =====
+
+function getChunkKey(gridX, gridY) {
+  const chunkX = Math.floor(gridX / CHUNK_SIZE);
+  const chunkY = Math.floor(gridY / CHUNK_SIZE);
+  return `${chunkX},${chunkY}`;
+}
+
+function addToChunk(planet) {
+  const key = getChunkKey(planet.gridX, planet.gridY);
+  if (!chunkMap[key]) chunkMap[key] = [];
+  chunkMap[key].push(planet);
+}
+
+function getNearbyPlanets(gridX, gridY) {
+  const chunkX = Math.floor(gridX / CHUNK_SIZE);
+  const chunkY = Math.floor(gridY / CHUNK_SIZE);
+  const nearby = [];
+  
+  // 周囲3×3チャンク
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      const key = `${chunkX + dx},${chunkY + dy}`;
+      if (chunkMap[key]) nearby.push(...chunkMap[key]);
+    }
+  }
+  return nearby;
+}
+
+// ===== 配置判定 =====
+
+function canPlace(gridX, gridY, newSize) {
+  // ブラックホール禁止距離チェック
+  const distToBlackhole = Math.sqrt(gridX * gridX + gridY * gridY);
+  const bhForbiddenDist = BLACKHOLE_FORBIDDEN_DISTANCE * 10 + (SIZE_OCCUPANCY[newSize] / 2) * 1.5 * 10;
+  
+  if (distToBlackhole <= bhForbiddenDist) {
+    console.log(`❌ ブラックホール禁止エリアと重なる: dist=${distToBlackhole.toFixed(1)}, minDist=${bhForbiddenDist.toFixed(1)}`);
+    return false;
+  }
+  
+  // 周囲の惑星をチェック
+  const nearby = getNearbyPlanets(gridX, gridY);
+  for (let p of nearby) {
+    if (p.isBlackhole) continue;
+    
+    const dx = gridX - p.gridX;
+    const dy = gridY - p.gridY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    
+    // 重力エリアの合計半径（グリッド座標単位で × 10）
+    const newGravityRadius = (SIZE_OCCUPANCY[newSize] / 2) * 1.5 * 10;
+    const pGravityRadius = (SIZE_OCCUPANCY[p.size] / 2) * 1.5 * 10;
+    const minDist = newGravityRadius + pGravityRadius;
+    
+    if (dist <= minDist) {
+      console.log(`❌ ${p.name}との重力エリアが重なる: dist=${dist.toFixed(1)}, minDist=${minDist.toFixed(1)}`);
+      return false;
+    }
+  }
+  
+  console.log(`✅ 配置可能`);
+  return true;
+}
+
+// ===== 描画 =====
+
+function drawStars() {
+  const c = document.getElementById('starfield');
+  const W = window.innerWidth, H = window.innerHeight;
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+  
+  for (let i = 0; i < 250; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = Math.random() * 1.3;
+    const a = 0.25 + Math.random() * 0.75;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fill();
+  }
+}
+
+function initBlackhole() {
+  if (bhCanvas) return;
+  
+  bhCanvas = document.getElementById('bhCanvas');
+  bhCtx = bhCanvas.getContext('2d');
+  const W = window.innerWidth, H = window.innerHeight;
+  bhCanvas.width = W;
+  bhCanvas.height = H;
+  
+  // パーティクル初期化（300個）
+  bhParticles = [];
+  for (let i = 0; i < 300; i++) {
+    const r = 40 + Math.random() * 360;
+    bhParticles.push({
+      angle: Math.random() * Math.PI * 2,
+      radius: r,
+      baseRadius: r,
+      speed: 0.0001 + Math.random() * 0.0003,
+      size: Math.random() * 1 + 0.5
+    });
+  }
+}
+
+function updateBlackhole() {
+  if (!bhCanvas || !bhCtx) return;
+  
+  const W = window.innerWidth, H = window.innerHeight;
+  const cx = (0 * GRID_SCALE + offX) * zoom;
+  const cy = (0 * GRID_SCALE + offY) * zoom;
+  
+  bhRotation += 0.15;
+  
+  bhCtx.clearRect(0, 0, W, H);
+  bhCtx.fillStyle = 'rgba(0,0,0,0.03)';
+  bhCtx.fillRect(0, 0, W, H);
+  
+  // パーティクル描画
+  for (const p of bhParticles) {
+    p.angle += p.speed;
+    
+    const x = cx + Math.cos(p.angle) * p.radius * zoom;
+    const y = cy + Math.sin(p.angle) * p.radius * zoom;
+    
+    const distFromCenter = p.radius;
+    const ratio = distFromCenter / 240;
+    
+    const brightness = Math.max(180, 255 - distFromCenter * 0.3);
+    const hue = 200 + ratio * 20;
+    const saturation = Math.max(30, 80 - ratio * 70);
+    
+    bhCtx.beginPath();
+    bhCtx.fillStyle = `hsla(${hue}, ${saturation}%, ${brightness / 2}%, 0.95)`;
+    bhCtx.arc(x, y, p.size * zoom, 0, Math.PI * 2);
+    bhCtx.fill();
+  }
+  
+  // グラデーション（中心から400pxまで）
+  const grad = bhCtx.createRadialGradient(cx, cy, 30 * zoom, cx, cy, 400 * zoom);
+  grad.addColorStop(0, 'rgba(0,0,0,1)');
+  grad.addColorStop(0.3, 'rgba(120,60,200,0.25)');
+  grad.addColorStop(0.6, 'rgba(200,100,255,0.1)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  
+  bhCtx.fillStyle = grad;
+  bhCtx.beginPath();
+  bhCtx.arc(cx, cy, 400 * zoom, 0, Math.PI * 2);
+  bhCtx.fill();
+  
+  // 中心の黒い円
+  bhCtx.beginPath();
+  bhCtx.fillStyle = '#000';
+  bhCtx.arc(cx, cy, 20 * zoom, 0, Math.PI * 2);
+  bhCtx.fill();
+  
+  // コアグロー（紫）
+  const coreGrad = bhCtx.createRadialGradient(cx, cy, 0, cx, cy, 30 * zoom);
+  coreGrad.addColorStop(0, 'rgba(100,50,150,0.3)');
+  coreGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  bhCtx.fillStyle = coreGrad;
+  bhCtx.beginPath();
+  bhCtx.arc(cx, cy, 60 * zoom, 0, Math.PI * 2);
+  bhCtx.fill();
+}
+
+function drawForbiddenAreas() {
+  const forbiddenCanvas = document.getElementById('forbiddenCanvas');
+  if (!forbiddenCanvas) return;
+  
+  const ctx = forbiddenCanvas.getContext('2d');
+  const W = window.innerWidth, H = window.innerHeight;
+  
+  if (!forbiddenCanvas.width || forbiddenCanvas.width !== W) {
+    forbiddenCanvas.width = W;
+  }
+  if (!forbiddenCanvas.height || forbiddenCanvas.height !== H) {
+    forbiddenCanvas.height = H;
+  }
+  
+  ctx.clearRect(0, 0, W, H);
+  
+  if (!placingMode) return;
+  
+  // ===== 既存惑星の重力エリア（常に同じサイズで表示） =====
+  const allNearby = placeMouseGridX !== null ? getNearbyPlanets(placeMouseGridX, placeMouseGridY) : [];
+  
+  for (let p of allNearby) {
+    if (p.isBlackhole) continue;
+    
+    // 既存惑星p自身の重力エリア（惑星直径の約1.5倍）
+    const pGravityRadiusPx = (SIZE_OCCUPANCY[p.size] / 2) * 10 * zoom * 1.5;
+    const pScreenX = (p.gridX * GRID_SCALE + offX) * zoom;
+    const pScreenY = (p.gridY * GRID_SCALE + offY) * zoom;
+    
+    // 既存惑星の重力エリアを薄く表示
+    ctx.beginPath();
+    ctx.arc(pScreenX, pScreenY, pGravityRadiusPx, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(150, 100, 100, 0.06)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(200, 120, 120, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+  
+  // ブラックホール禁止エリア描画
+  const bhRadiusPx = BLACKHOLE_FORBIDDEN_DISTANCE * 10 * zoom;
+  const bhScreenX = (0 * GRID_SCALE + offX) * zoom;
+  const bhScreenY = (0 * GRID_SCALE + offY) * zoom;
+  
+  ctx.beginPath();
+  ctx.arc(bhScreenX, bhScreenY, bhRadiusPx, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255, 120, 120, 0.15)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 120, 120, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  
+  // ===== 新規惑星のプレビュー =====
+  if (form.size !== null && placeMouseGridX !== null && placeMouseGridY !== null) {
+    const screenX = (placeMouseGridX * GRID_SCALE + offX) * zoom;
+    const screenY = (placeMouseGridY * GRID_SCALE + offY) * zoom;
+    const isPlaceable = canPlace(placeMouseGridX, placeMouseGridY, form.size);
+    
+    // 新規惑星の重力エリア（惑星直径の約1.5倍）
+    const newGravityRadiusPx = (SIZE_OCCUPANCY[form.size] / 2) * 10 * zoom * 1.5;
+    
+    // 新規惑星と各既存惑星の重力エリアが重なるかチェック
+    for (let p of allNearby) {
+      if (p.isBlackhole) continue;
+      
+      const pGravityRadiusPx = (SIZE_OCCUPANCY[p.size] / 2) * 10 * zoom * 1.5;
+      const pScreenX = (p.gridX * GRID_SCALE + offX) * zoom;
+      const pScreenY = (p.gridY * GRID_SCALE + offY) * zoom;
+      
+      // 新規惑星と既存惑星の重力エリアの距離
+      const dx = screenX - pScreenX;
+      const dy = screenY - pScreenY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      // 重力エリアが重なる場合、枠線を赤く
+      if (dist < newGravityRadiusPx + pGravityRadiusPx) {
+        // 何もしない（配置不可判定は canPlace() で行う）
+      }
+    }
+    
+    // 新規惑星の重力エリアを表示
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, newGravityRadiusPx, 0, Math.PI * 2);
+    ctx.fillStyle = isPlaceable ? 'rgba(80, 255, 80, 0.12)' : 'rgba(255, 80, 80, 0.15)';
+    ctx.fill();
+    ctx.strokeStyle = isPlaceable ? 'rgba(100, 255, 100, 0.8)' : 'rgba(255, 100, 100, 0.8)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+}
+
+function render() {
+  mapView.innerHTML = '';
+  const W = window.innerWidth, H = window.innerHeight;
+  
+  planets.forEach((p, i) => {
+    // ブラックホールはスキップ（Canvasで描画済み）
+    if (p.isBlackhole) return;
+    
+    const el = document.createElement('div');
+    el.className = 'planet';
+    const sz = SIZE_OCCUPANCY[p.size] / 2 * 10 * zoom * 2;  // 直径（GRID_SCALEに依存しない）
+    el.style.width = sz + 'px';
+    el.style.height = sz + 'px';
+    el.style.background = planetBg(p);
+    el.style.boxShadow = planetGlow(p);
+    
+    const screenX = (p.gridX * GRID_SCALE + offX) * zoom;
+    const screenY = (p.gridY * GRID_SCALE + offY) * zoom;
+    el.style.left = screenX + 'px';
+    el.style.top = screenY + 'px';
+    
+    const lbl = document.createElement('div');
+    lbl.className = 'planet-label';
+    lbl.textContent = p.name;
+    el.appendChild(lbl);
+    el.addEventListener('click', () => openPlanet(i));
+    mapView.appendChild(el);
+  });
+  
+  if (placingMode) {
+    drawForbiddenAreas();
+    
+    // プレビューの位置とサイズをスクロール/ズームに合わせて更新
+    if (placeSelectedGridX !== null && placeSelectedGridY !== null) {
+      const preview = document.getElementById('place-preview');
+      const screenX = (placeSelectedGridX * GRID_SCALE + offX) * zoom;
+      const screenY = (placeSelectedGridY * GRID_SCALE + offY) * zoom;
+      
+      preview.style.left = screenX + 'px';
+      preview.style.top = screenY + 'px';
+      
+      // サイズもズームに応じて更新
+      if (form.size) {
+        const sz = SIZE_OCCUPANCY[form.size] / 2 * 10 * zoom * 2;
+        preview.style.width = sz + 'px';
+        preview.style.height = sz + 'px';
+      }
+    }
+  }
+}
+
+// ===== プラネット詳細ページ機能 =====
+
+async function loadContentsByPlanet(planetId) {
+  // 現在はローカルストレージでシミュレート
+  // 将来的にはSupabaseから読み込む
+  const contents = JSON.parse(localStorage.getItem(`contents_${planetId}`) || '[]');
+  return contents;
+}
+
+function displayContentPage(planetId) {
+  loadContentsByPlanet(planetId).then(contents => {
+    const list = document.getElementById('cc-content-list');
+    
+    if (contents.length === 0) {
+      list.innerHTML = '<div style="color: rgba(255,255,255,0.25); font-size: 12px; text-align: center; padding: 40px 20px;">📭 まだコンテンツがありません</div>';
+      return;
+    }
+    
+    list.innerHTML = contents.map((c, i) => {
+      // 古いデータ形式（content）と新しい形式（description）の両方に対応
+      const desc = c.description || c.content || '（説明なし）';
+      return `
+        <div style="position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          <button onclick="deleteContent('${planetId}', ${i})" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,100,100,0.7); font-size: 16px; cursor: pointer; transition: all 0.2s; padding: 4px 8px;" onmouseover="this.style.color='#ff6464'" onmouseout="this.style.color='rgba(255,100,100,0.7)'">✕</button>
+          <div style="color: #fff; font-size: 13px; font-weight: bold; margin-bottom: 6px; letter-spacing: 0.5px; padding-right: 30px;">${c.title}</div>
+          <div style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 8px; line-height: 1.5;">${desc.substring(0, 80)}${desc.length > 80 ? '...' : ''}</div>
+          <div style="color: rgba(255,255,255,0.35); font-size: 11px;">${c.type === 'text' ? '📝 テキスト' : '🔗 リンク'}</div>
+        </div>
+      `;
+    }).join('');
+  });
+}
+
+function deleteContent(planetId, index) {
+  if (!confirm('このコンテンツを削除しますか？')) return;
+  
+  const contents = JSON.parse(localStorage.getItem(`contents_${planetId}`) || '[]');
+  contents.splice(index, 1);
+  localStorage.setItem(`contents_${planetId}`, JSON.stringify(contents));
+  
+  console.log('✅ コンテンツを削除しました');
+  displayContentPage(planetId);
+}
+
+function openAddContentPrompt() {
+  const modal = document.getElementById('add-content-modal');
+  modal.style.display = 'flex';
+  document.getElementById('ac-title').value = '';
+  document.getElementById('ac-description').value = '';
+  document.getElementById('ac-url').value = '';
+  document.getElementById('ac-title').focus();
+}
+
+function closeAddContentModal() {
+  document.getElementById('add-content-modal').style.display = 'none';
+}
+
+function submitAddContent() {
+  const title = document.getElementById('ac-title').value.trim();
+  const description = document.getElementById('ac-description').value.trim();
+  const url = document.getElementById('ac-url').value.trim();
+  
+  if (!title) {
+    alert('タイトルを入力してください');
+    return;
+  }
+  
+  if (!description) {
+    alert('説明を入力してください');
+    return;
+  }
+  
+  const p = planets[curIdx];
+  if (!p) return;
+  
+  const newContent = {
+    title: title,
+    description: description,
+    type: url ? 'link' : 'text',
+    url: url || null
+  };
+  
+  // ローカルストレージに保存
+  const planetId = p.id;
+  const contents = JSON.parse(localStorage.getItem(`contents_${planetId}`) || '[]');
+  contents.push(newContent);
+  localStorage.setItem(`contents_${planetId}`, JSON.stringify(contents));
+  
+  console.log('✅ コンテンツを追加しました:', title);
+  closeAddContentModal();
+  displayContentPage(planetId);
+}
+
+// ===== イベントハンドラ =====
+
+function openPlanet(idx) {
+  fade(() => {
+    curIdx = idx;
+    const p = planets[idx];
+    const orb = document.getElementById('pv-orb');
+    orb.style.background = planetBg(p);
+    orb.style.boxShadow = planetGlow(p);
+    document.getElementById('pv-name').textContent = p.name;
+    document.getElementById('pv-id').textContent = p.id + (p.barren ? ' · 文明なし' : '');
+    document.getElementById('pv-pop').textContent = p.barren ? '謎の信号を受信中...' : '人口 ' + p.population.toLocaleString() + ' 人';
+    document.getElementById('pv-desc').textContent = p.desc;
+    
+    const tagsEl = document.getElementById('pv-tags');
+    tagsEl.innerHTML = '';
+    p.tags.forEach(t => {
+      const s = document.createElement('span');
+      s.className = 'pv-tag';
+      s.textContent = t;
+      tagsEl.appendChild(s);
+    });
+    
+    // 惑星ビューを表示
+    planetView.style.display = 'flex';
+    planetView.classList.add('active');
+    backBtn.classList.add('visible');
+    modeLabel.textContent = '惑星ビュー';
+    document.getElementById('create-btn').style.display = 'none';
+  });
+}
+
+function backToMap() {
+  fade(() => {
+    planetView.style.display = 'none';
+    planetView.classList.remove('active');
+    backBtn.classList.remove('visible');
+    modeLabel.textContent = '宇宙マップ';
+    document.getElementById('create-btn').style.display = '';
+    curIdx = -1;
+  });
+}
+
+function visitPlanet() {
+  const p = planets[curIdx];
+  if (!p) return;
+  if (p.barren) {
+    document.getElementById('pv-desc').textContent = 'ここは未開拓の惑星です。';
+    return;
+  }
+  
+  // 惑星ビューと関連UIを非表示にする
+  planetView.classList.remove('active');
+  document.getElementById('planet-view').style.display = 'none';
+  backBtn.style.display = 'none';
+  document.getElementById('create-btn').style.display = 'none';
+  
+  // コンテンツページを表示
+  document.getElementById('planet-content-page').style.display = 'flex';
+  document.getElementById('cc-planet-name').textContent = p.name;
+  
+  // コンテンツを読み込んで表示
+  displayContentPage(p.id);
+}
+
+function backFromContent() {
+  // コンテンツページを非表示
+  document.getElementById('planet-content-page').style.display = 'none';
+  
+  // 惑星ビューに戻す
+  document.getElementById('planet-view').style.display = 'flex';
+  backBtn.style.display = 'block';
+  document.getElementById('create-btn').style.display = 'none';
+  planetView.classList.add('active');
+}
+
+function fade(cb) {
+  ov.classList.add('on');
+  setTimeout(() => { cb(); ov.classList.remove('on'); }, 230);
+}
+
+function zoomIn() {
+  const W = window.innerWidth, H = window.innerHeight;
+  const idx = ZOOM_LEVELS.indexOf(Math.round(zoom * 100));
+  
+  if (idx < ZOOM_LEVELS.length - 1) {
+    // ズーム前：画面中央が指すグリッド座標
+    const centerGridX = (W / 2) / zoom - offX;
+    const centerGridY = (H / 2) / zoom - offY;
+    
+    zoom = ZOOM_LEVELS[idx + 1] / 100;
+    
+    // ズーム後：同じグリッド座標が画面中央に来るようにoffX, offYを調整
+    offX = (W / 2) / zoom - centerGridX;
+    offY = (H / 2) / zoom - centerGridY;
+    
+    updateZoomDisplay();
+    render();
+    drawForbiddenAreas();
+  }
+}
+
+function zoomOut() {
+  const W = window.innerWidth, H = window.innerHeight;
+  const idx = ZOOM_LEVELS.indexOf(Math.round(zoom * 100));
+  
+  if (idx > 0) {
+    // ズーム前：画面中央が指すグリッド座標
+    const centerGridX = (W / 2) / zoom - offX;
+    const centerGridY = (H / 2) / zoom - offY;
+    
+    zoom = ZOOM_LEVELS[idx - 1] / 100;
+    
+    // ズーム後：同じグリッド座標が画面中央に来るようにoffX, offYを調整
+    offX = (W / 2) / zoom - centerGridX;
+    offY = (H / 2) / zoom - centerGridY;
+    
+    updateZoomDisplay();
+    render();
+    drawForbiddenAreas();
+  }
+}
+
+function updateZoomDisplay() {
+  const display = document.getElementById('zoom-display');
+  display.textContent = zoom.toFixed(1) + '×';
+}
+
+// ===== マウス操作 =====
+
+app.addEventListener('mousedown', e => {
+  if (curIdx !== -1) return;
+  dragging = true;
+  wasDragging = false;
+  dragX = e.clientX - offX;
+  dragY = e.clientY - offY;
+  app.classList.add('grabbing');
+});
+
+app.addEventListener('mousemove', e => {
+  // 座標表示更新
+  const gridX = Math.round((e.clientX / zoom - offX) / GRID_SCALE);
+  const gridY = Math.round((e.clientY / zoom - offY) / GRID_SCALE);
+  document.getElementById('cursor-coords').textContent = `X${gridX} Y${gridY}`;
+  
+  if (dragging) {
+    wasDragging = true;
+    offX = e.clientX - dragX;
+    offY = e.clientY - dragY;
+    render();
+    drawForbiddenAreas();
+  }
+  
+  // 場所が確定されていない場合のみ、プレビューを更新
+  if (placingMode && placeSelectedGridX === null) {
+    const preview = document.getElementById('place-preview');
+    const sz = form.size ? SIZE_OCCUPANCY[form.size] / 2 * 10 * zoom * 2 : 50;
+    preview.style.width = sz + 'px';
+    preview.style.height = sz + 'px';
+    preview.style.left = e.clientX + 'px';
+    preview.style.top = e.clientY + 'px';
+    preview.style.display = 'block';
+    preview.style.opacity = '0.4';
+    preview.style.border = 'none';
+    
+    placeMouseGridX = gridX;
+    placeMouseGridY = gridY;
+    drawForbiddenAreas();
+  }
+});
+
+// スマホ対応：タッチイベント
+app.addEventListener('touchstart', e => {
+  if (curIdx !== -1) return;
+  dragging = true;
+  wasDragging = false;
+  dragX = e.touches[0].clientX - offX;
+  dragY = e.touches[0].clientY - offY;
+}, { passive: true });
+
+app.addEventListener('touchmove', e => {
+  if (dragging) {
+    wasDragging = true;
+    offX = e.touches[0].clientX - dragX;
+    offY = e.touches[0].clientY - dragY;
+    render();
+    drawForbiddenAreas();
+  }
+}, { passive: true });
+
+app.addEventListener('touchend', e => {
+  dragging = false;
+  wasDragging = false;
+}, { passive: true });
+
+app.addEventListener('mouseup', e => {
+  dragging = false;
+  app.classList.remove('grabbing');
+  
+  // ボタンやモーダル内のクリックは無視
+  if (e.target.closest('#place-actions') || e.target.closest('#modal')) {
+    wasDragging = false;
+    return;
+  }
+  
+  if (placingMode && !wasDragging) onMapClick(e);
+  wasDragging = false;
+});
+
+app.addEventListener('mouseleave', () => {
+  dragging = false;
+  app.classList.remove('grabbing');
+  wasDragging = false;
+});
+
+app.addEventListener('wheel', e => {
+  e.preventDefault();
+  e.deltaY < 0 ? zoomIn() : zoomOut();
+}, {passive: false});
+
+// ===== 配置モード =====
+
+function onMapClick(e) {
+  if (!placingMode) return;
+  
+  const W = window.innerWidth, H = window.innerHeight;
+  const gridX = Math.round((e.clientX / zoom - offX) / GRID_SCALE);
+  const gridY = Math.round((e.clientY / zoom - offY) / GRID_SCALE);
+  
+  if (!canPlace(gridX, gridY, form.size)) {
+    showToast('ここに惑星は置けません');
+    return;
+  }
+  
+  // 座標を確定
+  placeSelectedGridX = gridX;
+  placeSelectedGridY = gridY;
+  placeMouseGridX = gridX;  // 描画用にも設定
+  placeMouseGridY = gridY;
+  
+  // プレビューを確定座標に固定表示
+  updateFixedPreview(gridX, gridY);
+  
+  // 「ここに作る」ボタンを表示・強調
+  const confirmBtn = document.getElementById('place-confirm');
+  confirmBtn.style.display = 'block';
+  confirmBtn.style.background = 'rgba(100,180,255,0.3)';
+  confirmBtn.style.boxShadow = '0 0 20px rgba(100,180,255,0.5)';
+  
+  drawForbiddenAreas();
+}
+
+function updateFixedPreview(gridX, gridY) {
+  const preview = document.getElementById('place-preview');
+  const screenX = (gridX * GRID_SCALE + offX) * zoom;
+  const screenY = (gridY * GRID_SCALE + offY) * zoom;
+  
+  preview.style.left = screenX + 'px';
+  preview.style.top = screenY + 'px';
+  preview.style.display = 'block';
+  preview.style.opacity = '1';
+  preview.style.border = '2px solid rgba(100,180,255,0.8)';
+  
+  // プレビューのサイズもズームに応じて更新
+  if (form.size) {
+    const sz = SIZE_OCCUPANCY[form.size] / 2 * 10 * zoom * 2;
+    preview.style.width = sz + 'px';
+    preview.style.height = sz + 'px';
+  }
+  
+  // 「ここに作る」ボタンを強調表示
+  const confirmBtn = document.getElementById('place-confirm');
+  confirmBtn.style.display = 'block';
+  confirmBtn.classList.add('confirmed');
+  
+  // 重力エリアを更新（プレビュー位置変更時）
+  drawForbiddenAreas();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('place-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ===== モーダル =====
+
+function onColorPickerChange(color) {
+  form._color = color;
+  document.getElementById('step2-next').disabled = form.name.trim().length === 0 || !form._color;
+}
+
+function setRandomColor() {
+  const color = randomColor();
+  form._color = color;
+  document.getElementById('color-picker').value = color;
+  document.getElementById('step2-next').disabled = form.name.trim().length === 0 || !form._color;
+}
+
+function initTagGrid() {
+  const grid = document.getElementById('tag-grid');
+  grid.innerHTML = '';
+  AVAILABLE_TAGS.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'tag-opt' + (form.tags.includes(t) ? ' selected' : '');
+    el.textContent = t;
+    el.onclick = () => toggleTag(t, el);
+    grid.appendChild(el);
+  });
+}
+
+function toggleTag(tag, el) {
+  if (form.tags.includes(tag)) {
+    form.tags = form.tags.filter(t => t !== tag);
+    el.classList.remove('selected');
+  } else {
+    form.tags.push(tag);
+    el.classList.add('selected');
+  }
+}
+
+function selectCiv(hasCiv) {
+  form.civ = hasCiv;
+  document.getElementById('civ-yes').classList.toggle('selected', hasCiv);
+  document.getElementById('civ-no').classList.toggle('selected', !hasCiv);
+  checkStep1();
+}
+
+function selectSize(n) {
+  form.size = n;
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('sz-' + i).classList.toggle('selected', i === n);
+  }
+  checkStep1();
+}
+
+function checkStep1() {
+  document.getElementById('step1-next').disabled = !(form.civ !== null && form.size !== null);
+}
+
+function onNameInput() {
+  form.name = document.getElementById('f-name').value;
+  document.getElementById('step2-next').disabled = form.name.trim().length === 0 || !form._color;
+}
+
+function onDescInput() {
+  form.desc = document.getElementById('f-desc').value;
+  document.getElementById('desc-count').textContent = form.desc.length;
+}
+
+function goStep(n) {
+  document.getElementById('step' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step' + currentStep).classList.add('active');
+  document.getElementById('modal-sub-text').textContent = 'STEP ' + n + ' / 3';
+  
+  if (n === 2) {
+    initTagGrid();
+    document.getElementById('step2-next').disabled = form.name.trim().length === 0 || !form._color;
+  }
+  if (n === 3) {
+    buildConfirm();
+  }
+}
+
+function enterPlaceMode() {
+  document.getElementById('modal-bg').classList.remove('active');
+  document.getElementById('place-mode-ui').classList.add('active');
+  document.getElementById('create-btn').style.display = 'none';
+  app.classList.add('placing');
+  placingMode = true;
+  placeSelectedGridX = null;
+  placeSelectedGridY = null;
+  
+  const color = form._color;
+  const preview = document.getElementById('place-preview');
+  const sz = SIZE_OCCUPANCY[form.size] / 2 * 10 * 2;  // 直径（GRID_SCALEに依存しない）
+  preview.style.width = sz + 'px';
+  preview.style.height = sz + 'px';
+  preview.style.background = form.civ
+    ? `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`
+    : `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`;
+  preview.style.boxShadow = form.civ
+    ? `0 0 18px 5px ${color}66`
+    : `0 0 8px 2px ${color}33`;
+  preview.style.opacity = '0.6';
+  
+  // 「ここに作る」ボタンは非表示（場所選択後に表示）
+  document.getElementById('place-confirm').style.display = 'none';
+  
+  render();
+  drawForbiddenAreas();
+}
+
+function cancelPlaceMode() {
+  placingMode = false;
+  app.classList.remove('placing');
+  document.getElementById('place-mode-ui').classList.remove('active');
+  document.getElementById('place-preview').style.display = 'none';
+  document.getElementById('create-btn').style.display = '';
+  document.getElementById('modal-bg').classList.add('active');
+  currentStep = 2;
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step2').classList.add('active');
+  document.getElementById('modal-sub-text').textContent = 'STEP 2 / 3';
+}
+
+function confirmPlace() {
+  console.log(`confirmPlace: gridX=${placeSelectedGridX}, gridY=${placeSelectedGridY}, size=${form.size}`);
+  const canPlaceResult = canPlace(placeSelectedGridX, placeSelectedGridY, form.size);
+  console.log(`canPlace result: ${canPlaceResult}`);
+  
+  if (!canPlaceResult) {
+    showToast('ここに惑星は置けません（重力エリアが重なっています）');
+    return;
+  }
+  
+  // 場所が確定されたので、配置モードを終了
+  placingMode = false;
+  app.classList.remove('placing');
+  document.getElementById('place-mode-ui').classList.remove('active');
+  document.getElementById('place-preview').style.display = 'none';
+  document.getElementById('create-btn').style.display = '';
+  
+  form._placedGridX = placeSelectedGridX;
+  form._placedGridY = placeSelectedGridY;
+  
+  document.getElementById('modal-bg').classList.add('active');
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  currentStep = 2;
+  goStep(3);
+}
+
+function buildConfirm() {
+  const sd = SIZE_DATA[form.size];
+  const color = form._color;
+  
+  const orb = document.getElementById('confirm-orb');
+  orb.style.background = form.civ
+    ? `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`
+    : `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`;
+  orb.style.boxShadow = form.civ
+    ? `0 0 18px 5px ${color}66, 0 0 40px 12px ${color}22`
+    : `0 0 8px 2px ${color}33`;
+  
+  document.getElementById('confirm-name').textContent = form.name || '（名前未入力）';
+  document.getElementById('confirm-id').textContent = gridToID(form._placedGridX, form._placedGridY) + (form.civ ? '' : ' · 文明なし');
+  
+  const tagText = form.tags.length > 0 ? form.tags.join(' / ') : 'タグなし';
+  document.getElementById('confirm-summary').innerHTML =
+    `${sd.icon} ${sd.name}惑星 · ${form.civ ? '文明あり' : '文明なし'}<br>` +
+    `タグ: ${tagText}`;
+  
+  document.getElementById('confirm-stella').textContent = sd.stella.toLocaleString();
+  document.getElementById('confirm-dust').textContent = sd.stella.toLocaleString();
+}
+
+// ===== Supabase DB操作関数 =====
+
+async function savePlanetToDB(planet) {
+  try {
+    const { data, error } = await supabaseClient
+      .from('planets')
+      .insert([{
+        planet_id: planet.id,
+        grid_x: planet.gridX,
+        grid_y: planet.gridY,
+        name: planet.name,
+        size: planet.size,
+        color: planet.color,
+        description: planet.desc,
+        tags: planet.tags,
+        barren: planet.barren,
+        population: planet.pop,
+        created_at: new Date().toISOString()
+      }])
+      .select();
+    
+    if (error) {
+      console.error('❌ DB保存エラー:', error);
+      return false;
+    }
+    console.log('✅ 惑星をDB保存しました:', planet.id);
+    return true;
+  } catch (err) {
+    console.error('❌ DB操作エラー:', err);
+    return false;
+  }
+}
+
+async function loadPlanetsFromDB() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('planets')
+      .select('*');
+    
+    if (error) {
+      console.error('❌ DB読み込みエラー:', error);
+      return [];
+    }
+    
+    // DBのデータを planets配列に変換
+    const loadedPlanets = data.map(row => ({
+      id: row.planet_id,
+      name: row.name,
+      size: row.size,
+      color: row.color,
+      gridX: row.grid_x,
+      gridY: row.grid_y,
+      desc: row.description,
+      tags: row.tags || [],
+      barren: row.barren,
+      pop: row.population,
+      population: row.population  // 互換性のため両方つける
+    }));
+    
+    console.log(`✅ DB から ${loadedPlanets.length} 個の惑星を読み込みました`);
+    return loadedPlanets;
+  } catch (err) {
+    console.error('❌ DB操作エラー:', err);
+    return [];
+  }
+}
+
+function createPlanet() {
+  const sd = SIZE_DATA[form.size];
+  const color = form._color;
+  
+  const newPlanet = {
+    id: gridToID(form._placedGridX, form._placedGridY),
+    name: form.name,
+    size: form.size,
+    color: color,
+    gridX: form._placedGridX,
+    gridY: form._placedGridY,
+    desc: form.desc || (form.civ ? 'まだ説明がありません。' : 'フレーバーテキストが刻まれている...'),
+    tags: [...form.tags],
+    population: form.civ ? 100 : 0,
+    barren: !form.civ,
+    pop: form.civ ? 100 : 0  // 互換性のため両方つける
+  };
+  
+  planets.push(newPlanet);
+  addToChunk(newPlanet);
+  
+  // DB に非同期で保存（完成演出は待たない）
+  savePlanetToDB(newPlanet).catch(err => console.error('DB保存失敗:', err));
+  
+  // 完成演出
+  document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
+  document.getElementById('modal-sub-text').textContent = '探索完了！';
+  const suc = document.getElementById('modal-success');
+  suc.style.display = 'block';
+  
+  const sorb = document.getElementById('success-orb');
+  sorb.style.background = newPlanet.barren
+    ? `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`
+    : `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`;
+  sorb.style.boxShadow = newPlanet.barren
+    ? `0 0 8px 2px ${color}33`
+    : `0 0 18px 5px ${color}66, 0 0 40px 12px ${color}22`;
+  
+  document.getElementById('success-name').textContent = `「${form.name}」が宇宙地図に刻まれた`;
+  document.getElementById('success-sub').innerHTML =
+    `座標: ${newPlanet.id}<br><br>宇宙マップで確認してみよう。`;
+  
+  render();
+}
+
+function openCreateModal() {
+  form = {civ: null, size: null, tags: [], name: '', desc: '', _color: '#4a9edd', _placedGridX: null, _placedGridY: null};
+  currentStep = 1;
+  document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); s.style.display = ''; });
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('modal-success').style.display = 'none';
+  document.getElementById('modal-sub-text').textContent = 'STEP 1 / 3';
+  document.getElementById('civ-yes').classList.remove('selected');
+  document.getElementById('civ-no').classList.remove('selected');
+  for (let i = 1; i <= 5; i++) document.getElementById('sz-' + i).classList.remove('selected');
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('desc-count').textContent = '0';
+  document.getElementById('color-picker').value = '#4a9edd';
+  document.getElementById('step1-next').disabled = true;
+  document.getElementById('step2-next').disabled = true;
+  
+  document.getElementById('modal-bg').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('active');
+  placingMode = false;
+  app.classList.remove('placing');
+  document.getElementById('place-mode-ui').classList.remove('active');
+  document.getElementById('create-btn').style.display = '';
+  render();
+}
+
+document.getElementById('modal-bg').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ===== 初期化 =====
+
+window.addEventListener('resize', () => {
+  // Canvas のサイズを更新
+  const bhCanvas = document.getElementById('bhCanvas');
+  if (bhCanvas) {
+    bhCanvas.width = window.innerWidth;
+    bhCanvas.height = window.innerHeight;
+  }
+  
+  const forbiddenCanvas = document.getElementById('forbiddenCanvas');
+  if (forbiddenCanvas) {
+    forbiddenCanvas.width = window.innerWidth;
+    forbiddenCanvas.height = window.innerHeight;
+  }
+  
+  drawStars();
+  render();
+  drawForbiddenAreas();
+});
+
+drawStars();
+
+// 非同期で初期化（DB読み込み）
+(async () => {
+  await initializeMap();  // (0,0) を中央に配置 + DB から惑星を読み込み
+  initBlackhole();
+  render();
+  drawForbiddenAreas();
+  animateBlackhole();
+  addToChunk(planets[0]);
+})();
+
+// ブラックホールアニメーションループ
+function animateBlackhole() {
+  updateBlackhole();
+  requestAnimationFrame(animateBlackhole);
+}
+
+// ===== 宇宙手帳機能 =====
+
+function updateHandbookList() {
+  const list = document.getElementById('handbook-list');
+  list.innerHTML = '';
+  
+  // ブラックホール以外の惑星を表示
+  planets.forEach((p, idx) => {
+    if (p.isBlackhole) return;
+    
+    const item = document.createElement('div');
+    item.style.cssText = `
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(100,180,255,0.3);
+      background: rgba(100,180,255,0.06);
+      cursor: pointer;
+      transition: all 0.2s;
+      color: rgba(255,255,255,0.8);
+      font-size: 12px;
+      letter-spacing: 1px;
+    `;
+    item.textContent = p.name;
+    
+    item.addEventListener('mouseenter', () => {
+      item.style.background = 'rgba(100,180,255,0.15)';
+      item.style.borderColor = 'rgba(100,180,255,0.6)';
+    });
+    item.addEventListener('mouseleave', () => {
+      item.style.background = 'rgba(100,180,255,0.06)';
+      item.style.borderColor = 'rgba(100,180,255,0.3)';
+    });
+    
+    item.addEventListener('click', () => zoomToPlanet(p));
+    list.appendChild(item);
+  });
+  
+  // 惑星がない場合
+  if (planets.length <= 1) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'color: rgba(255,255,255,0.3); font-size: 11px; text-align: center; padding: 20px 0;';
+    empty.textContent = '探索した惑星がまだありません';
+    list.appendChild(empty);
+  }
+}
+
+function zoomToPlanet(planet) {
+  const W = window.innerWidth, H = window.innerHeight;
+  const targetZoom = 2;
+  
+  // アニメーション変数
+  let progress = 0;
+  const duration = 800; // ミリ秒
+  const startTime = Date.now();
+  
+  // 現在の状態を保存
+  const startOffX = offX;
+  const startOffY = offY;
+  const startZoom = zoom;
+  
+  // 目標位置の計算（惑星が画面中央に来るように）
+  const targetOffX = W / 2 / targetZoom - planet.gridX * GRID_SCALE;
+  const targetOffY = H / 2 / targetZoom - planet.gridY * GRID_SCALE;
+  
+  function animate() {
+    const now = Date.now();
+    progress = Math.min((now - startTime) / duration, 1);
+    
+    // イージング関数（ease-out-cubic）
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    
+    // 現在の値を計算
+    offX = startOffX + (targetOffX - startOffX) * easeProgress;
+    offY = startOffY + (targetOffY - startOffY) * easeProgress;
+    zoom = startZoom + (targetZoom - startZoom) * easeProgress;
+    
+    render();
+    drawForbiddenAreas();
+    
+    // アニメーション完了まで続ける
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // パネルを閉じる
+      document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
+    }
+  }
+  
+  animate();
+}
+
+// パネルの開閉
+document.getElementById('handbook-btn').addEventListener('click', () => {
+  const panel = document.getElementById('handbook-panel');
+  if (panel.style.transform === 'translateX(0px)') {
+    panel.style.transform = 'translateX(100%)';
+  } else {
+    panel.style.transform = 'translateX(0px)';
+    updateHandbookList();
+  }
+});
+
+document.getElementById('handbook-close').addEventListener('click', () => {
+  document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
+});
+
+// 惑星作成後にハンドブックを更新
+const originalCreatePlanet = createPlanet;
+createPlanet = function() {
+  originalCreatePlanet.call(this);
+  updateHandbookList();
+};
+
+console.log('✅ v4 準備完了（設計ベース実装）');
+</script>
+</body>
+</html>
