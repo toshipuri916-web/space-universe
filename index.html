@@ -961,7 +961,7 @@ function lighten(hex) {
 
 function planetBg(p) {
   if (p.barren) {
-    // 文明なし：黒い雲24個版（濃淡強化）
+    // 文明なし：黒い雲24個版（濃淡強化）+ 指定色ベース
     const color = p.color;
     return `
       radial-gradient(circle at 10% 15%, rgba(0,0,0,0.38) 0%, transparent 22%),
@@ -990,11 +990,11 @@ function planetBg(p) {
       radial-gradient(circle at 62% 8%, rgba(0,0,0,0.09) 0%, transparent 4%),
       radial-gradient(circle at 25% 25%, rgba(180,180,170,0.18) 0%, transparent 30%),
       radial-gradient(circle at 75% 75%, rgba(0,0,0,0.4) 0%, transparent 35%),
-      radial-gradient(circle at 35% 35%, #b0b0a8 0%, #a0a098 20%, #8a8a80 40%, #6a6a60 65%, #4a4a3a 85%, #1a1a0a 100%)
+      radial-gradient(circle at 35% 35%, ${lighten(color)} 0%, ${color} 30%, ${color}cc 60%, ${color}88 85%, ${color}33 100%)
     `;
   }
   
-  // 文明あり＆滅びゆく文明：白い雲24個版（濃淡強化）
+  // 文明あり＆滅びゆく文明：白い雲24個版（濃淡強化）+ 指定色ベース
   const color = p.color;
   return `
     radial-gradient(circle at 10% 15%, rgba(255,255,255,0.38) 0%, transparent 22%),
@@ -1023,7 +1023,7 @@ function planetBg(p) {
     radial-gradient(circle at 62% 8%, rgba(255,255,255,0.09) 0%, transparent 4%),
     radial-gradient(circle at 25% 25%, rgba(255,255,255,0.28) 0%, transparent 30%),
     radial-gradient(circle at 75% 75%, rgba(0,0,0,0.25) 0%, transparent 35%),
-    radial-gradient(circle at 35% 35%, #a8f0ff 0%, #8ce6ff 20%, #7fd8ff 40%, #64b8ff 65%, #4a9edd 85%, #1d4f7f 100%)
+    radial-gradient(circle at 35% 35%, ${lighten(color)} 0%, ${lighten(color).replace('rgb', 'rgba').replace(')', ', 0.9)')} 20%, ${color} 40%, ${color}dd 65%, ${color}99 85%, ${color}44 100%)
   `;
 }
 
