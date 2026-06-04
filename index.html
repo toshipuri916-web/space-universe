@@ -1689,7 +1689,7 @@ function updateZoomDisplay() {
 
 app.addEventListener('mousedown', e => {
   const modalOpen = document.getElementById('modal-bg').classList.contains('active');
-  if (curIdx !== -1 || modalOpen) return;
+  if (curIdx !== -1 || modalOpen || placingMode) return;
   dragging = true;
   wasDragging = false;
   dragX = e.clientX - offX;
