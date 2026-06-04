@@ -219,7 +219,7 @@
     
     #cursor-coords { 
       position: absolute; 
-      top: clamp(12px, 3vh, 25px); 
+      bottom: clamp(12px, 3vh, 25px); 
       left: clamp(12px, 3vw, 25px); 
       color: rgba(255,255,255,0.35); 
       font-size: clamp(9px, 2vw, 11px); 
@@ -623,7 +623,6 @@
     <div class="pv-actions">
       <button class="pv-btn visit" onclick="visitPlanet()" style="flex: 1;">訪問</button>
       <button class="pv-btn" id="shine-btn" onclick="shinePlanet()" style="flex: 1; background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700;">✨ この星に輝きを与える</button>
-      <button class="pv-btn" onclick="backToMap()" style="flex: 1;">マップ</button>
     </div>
     <div class="swipe-hint">
       <span>← スワイプで移動 →</span>
