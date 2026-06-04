@@ -300,6 +300,28 @@
     }
     .success-msg { color: #fff; font-size: 14px; letter-spacing: 2px; margin-bottom: 8px; }
     .success-sub { color: rgba(255,255,255,0.35); font-size: 11px; line-height: 1.7; }
+    
+    /* スマホ対応 */
+    @media (max-width: 600px) {
+      #zoom-controls { 
+        bottom: calc(100px + safe-area-inset-bottom) !important; 
+        right: 18px !important;
+      }
+      #create-btn { 
+        bottom: calc(100px + safe-area-inset-bottom) !important; 
+        left: 18px !important;
+      }
+      #stardust { 
+        bottom: calc(20px + safe-area-inset-bottom) !important; 
+        right: 18px !important; 
+      }
+      #cursor-coords { 
+        display: none !important;
+      }
+      html, body {
+        padding-bottom: 120px;
+      }
+    }
   </style>
 </head>
 <body>
