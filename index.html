@@ -1238,6 +1238,30 @@ app.addEventListener('mousemove', e => {
   }
 });
 
+// スマホ対応：タッチイベント
+app.addEventListener('touchstart', e => {
+  if (curIdx !== -1) return;
+  dragging = true;
+  wasDragging = false;
+  dragX = e.touches[0].clientX - offX;
+  dragY = e.touches[0].clientY - offY;
+}, { passive: true });
+
+app.addEventListener('touchmove', e => {
+  if (dragging) {
+    wasDragging = true;
+    offX = e.touches[0].clientX - dragX;
+    offY = e.touches[0].clientY - dragY;
+    render();
+    drawForbiddenAreas();
+  }
+}, { passive: true });
+
+app.addEventListener('touchend', e => {
+  dragging = false;
+  wasDragging = false;
+}, { passive: true });
+
 app.addEventListener('mouseup', e => {
   dragging = false;
   app.classList.remove('grabbing');
