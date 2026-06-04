@@ -341,6 +341,7 @@
     
     <div class="pv-actions">
       <button class="pv-btn visit" onclick="visitPlanet()" style="flex: 1;">訪問</button>
+      <button class="pv-btn" id="shine-btn" onclick="shinePlanet()" style="flex: 1; background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700;">✨ この星に輝きを与える</button>
       <button class="pv-btn" onclick="backToMap()" style="flex: 1;">マップ</button>
     </div>
     <div class="swipe-hint">
@@ -390,6 +391,33 @@
       <div style="display: flex; gap: 10px;">
         <button onclick="closeAddContentModal()" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s;">キャンセル</button>
         <button onclick="submitAddContent()" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(100,200,255,0.2); border: 1px solid rgba(100,200,255,0.5); color: #64c8ff; font-size: 12px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; font-weight: 500;">追加 ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- コンテンツ編集モーダル -->
+  <div id="edit-content-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 200; align-items: center; justify-content: center;">
+    <div style="background: linear-gradient(135deg, rgba(30,40,60,0.95), rgba(20,30,50,0.95)); border: 1px solid rgba(100,200,255,0.2); border-radius: 16px; padding: 32px; max-width: 400px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.6);">
+      <div style="font-size: 16px; color: #fff; margin-bottom: 24px; letter-spacing: 2px; font-weight: 500;">✏️ コンテンツを編集</div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px; letter-spacing: 1px;">タイトル *</label>
+        <input type="text" id="ec-title" maxlength="50" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(100,200,255,0.3); border-radius: 8px; color: #fff; font-size: 13px; box-sizing: border-box; font-family: inherit;">
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px; letter-spacing: 1px;">説明 *</label>
+        <textarea id="ec-description" maxlength="300" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(100,200,255,0.3); border-radius: 8px; color: #fff; font-size: 13px; box-sizing: border-box; font-family: inherit; resize: vertical; min-height: 80px; line-height: 1.4;"></textarea>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 8px; letter-spacing: 1px;">URL（オプション）</label>
+        <input type="text" id="ec-url" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(100,200,255,0.3); border-radius: 8px; color: #fff; font-size: 13px; box-sizing: border-box; font-family: inherit;">
+      </div>
+      
+      <div style="display: flex; gap: 10px;">
+        <button onclick="closeEditModal()" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s;">キャンセル</button>
+        <button onclick="submitEditContent()" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(100,200,255,0.2); border: 1px solid rgba(100,200,255,0.5); color: #64c8ff; font-size: 12px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; font-weight: 500;">保存 ✓</button>
       </div>
     </div>
   </div>
@@ -1014,15 +1042,32 @@ function displayContentPage(planetId) {
       return;
     }
     
+    // ユーザーのいいね情報を読み込み
+    const myLikes = JSON.parse(localStorage.getItem(`myLikes_${planetId}`) || '{}');
+    
     list.innerHTML = contents.map((c, i) => {
       // 古いデータ形式（content）と新しい形式（description）の両方に対応
       const desc = c.description || c.content || '（説明なし）';
+      const myLike = myLikes[i];
+      const likeCount = c.likeCount || 0;
+      const badCount = c.badCount || 0;
+      
       return `
-        <div style="position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-          <button onclick="deleteContent('${planetId}', ${i})" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,100,100,0.7); font-size: 16px; cursor: pointer; transition: all 0.2s; padding: 4px 8px;" onmouseover="this.style.color='#ff6464'" onmouseout="this.style.color='rgba(255,100,100,0.7)'">✕</button>
+        <div onclick="openEditModal('${planetId}', ${i})" style="position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          <button onclick="event.stopPropagation(); deleteContent('${planetId}', ${i})" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,100,100,0.7); font-size: 16px; cursor: pointer; transition: all 0.2s; padding: 4px 8px;" onmouseover="this.style.color='#ff6464'" onmouseout="this.style.color='rgba(255,100,100,0.7)'">✕</button>
+          
           <div style="color: #fff; font-size: 13px; font-weight: bold; margin-bottom: 6px; letter-spacing: 0.5px; padding-right: 30px;">${c.title}</div>
           <div style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 8px; line-height: 1.5;">${desc.substring(0, 80)}${desc.length > 80 ? '...' : ''}</div>
-          <div style="color: rgba(255,255,255,0.35); font-size: 11px;">${c.type === 'text' ? '📝 テキスト' : '🔗 リンク'}</div>
+          <div style="color: rgba(255,255,255,0.35); font-size: 11px; margin-bottom: 12px;">${c.type === 'text' ? '📝 テキスト' : '🔗 リンク'}</div>
+          
+          <div style="display: flex; gap: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <button onclick="event.stopPropagation(); likeContent('${planetId}', ${i})" style="background: none; border: none; color: ${myLike === 'like' ? '#64ff64' : 'rgba(255,255,255,0.4)'}; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: color 0.2s;" onmouseover="this.style.color='#64ff64'" onmouseout="this.style.color='${myLike === 'like' ? '#64ff64' : 'rgba(255,255,255,0.4)'}'">
+              👍 <span style="font-size: 11px;">${likeCount}</span>
+            </button>
+            <button onclick="event.stopPropagation(); dislikeContent('${planetId}', ${i})" style="background: none; border: none; color: ${myLike === 'bad' ? '#ff6464' : 'rgba(255,255,255,0.4)'}; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: color 0.2s;" onmouseover="this.style.color='#ff6464'" onmouseout="this.style.color='${myLike === 'bad' ? '#ff6464' : 'rgba(255,255,255,0.4)'}'">
+              👎 <span style="font-size: 11px;">${badCount}</span>
+            </button>
+          </div>
         </div>
       `;
     }).join('');
@@ -1038,6 +1083,140 @@ function deleteContent(planetId, index) {
   
   console.log('✅ コンテンツを削除しました');
   displayContentPage(planetId);
+}
+
+let editingPlanetId = null;
+let editingIndex = null;
+
+function openEditModal(planetId, index) {
+  editingPlanetId = planetId;
+  editingIndex = index;
+  
+  const contents = JSON.parse(localStorage.getItem(`contents_${planetId}`) || '[]');
+  const content = contents[index];
+  
+  document.getElementById('ec-title').value = content.title;
+  document.getElementById('ec-description').value = content.description || content.content || '';
+  document.getElementById('ec-url').value = content.url || '';
+  
+  document.getElementById('edit-content-modal').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('edit-content-modal').style.display = 'none';
+  editingPlanetId = null;
+  editingIndex = null;
+}
+
+function submitEditContent() {
+  const title = document.getElementById('ec-title').value.trim();
+  const description = document.getElementById('ec-description').value.trim();
+  const url = document.getElementById('ec-url').value.trim();
+  
+  if (!title || !description) {
+    alert('タイトルと説明を入力してください');
+    return;
+  }
+  
+  const contents = JSON.parse(localStorage.getItem(`contents_${editingPlanetId}`) || '[]');
+  contents[editingIndex] = {
+    title: title,
+    description: description,
+    type: url ? 'link' : 'text',
+    url: url || null
+  };
+  
+  localStorage.setItem(`contents_${editingPlanetId}`, JSON.stringify(contents));
+  console.log('✅ コンテンツを編集しました');
+  closeEditModal();
+  displayContentPage(editingPlanetId);
+}
+
+function likeContent(planetId, index) {
+  const myLikes = JSON.parse(localStorage.getItem(`myLikes_${planetId}`) || '{}');
+  const contents = JSON.parse(localStorage.getItem(`contents_${planetId}`) || '[]');
+  const content = contents[index];
+  
+  // 既に like なら削除、そうじゃなければ like に設定
+  if (myLikes[index] === 'like') {
+    delete myLikes[index];
+    content.likeCount = Math.max(0, (content.likeCount || 0) - 1);
+  } else {
+    // bad から like に変更の場合
+    if (myLikes[index] === 'bad') {
+      content.badCount = Math.max(0, (content.badCount || 0) - 1);
+    }
+    myLikes[index] = 'like';
+    content.likeCount = (content.likeCount || 0) + 1;
+  }
+  
+  localStorage.setItem(`myLikes_${planetId}`, JSON.stringify(myLikes));
+  localStorage.setItem(`contents_${planetId}`, JSON.stringify(contents));
+  displayContentPage(planetId);
+}
+
+function dislikeContent(planetId, index) {
+  const myLikes = JSON.parse(localStorage.getItem(`myLikes_${planetId}`) || '{}');
+  const contents = JSON.parse(localStorage.getItem(`contents_${planetId}`) || '[]');
+  const content = contents[index];
+  
+  // 既に bad なら削除、そうじゃなければ bad に設定
+  if (myLikes[index] === 'bad') {
+    delete myLikes[index];
+    content.badCount = Math.max(0, (content.badCount || 0) - 1);
+  } else {
+    // like から bad に変更の場合
+    if (myLikes[index] === 'like') {
+      content.likeCount = Math.max(0, (content.likeCount || 0) - 1);
+    }
+    myLikes[index] = 'bad';
+    content.badCount = (content.badCount || 0) + 1;
+  }
+  
+  localStorage.setItem(`myLikes_${planetId}`, JSON.stringify(myLikes));
+  localStorage.setItem(`contents_${planetId}`, JSON.stringify(contents));
+  displayContentPage(planetId);
+}
+
+function shinePlanet() {
+  const p = planets[curIdx];
+  if (!p) return;
+  
+  const myFollows = JSON.parse(localStorage.getItem('myFollows') || '[]');
+  const isFollowing = myFollows.includes(p.id);
+  
+  if (isFollowing) {
+    // フォロー解除
+    const idx = myFollows.indexOf(p.id);
+    myFollows.splice(idx, 1);
+    console.log('✅ この星への応援を解除しました');
+  } else {
+    // フォロー
+    myFollows.push(p.id);
+    console.log('✅ この星に輝きを与えました！');
+  }
+  
+  localStorage.setItem('myFollows', JSON.stringify(myFollows));
+  updateShineButton();
+}
+
+function updateShineButton() {
+  const p = planets[curIdx];
+  if (!p) return;
+  
+  const myFollows = JSON.parse(localStorage.getItem('myFollows') || '[]');
+  const isFollowing = myFollows.includes(p.id);
+  
+  const btn = document.getElementById('shine-btn');
+  if (isFollowing) {
+    btn.textContent = '✨ 輝きを与えている';
+    btn.style.background = 'rgba(255,215,0,0.3)';
+    btn.style.color = '#ffed4e';
+  } else {
+    btn.textContent = '✨ この星に輝きを与える';
+    btn.style.background = 'rgba(255,215,0,0.15)';
+    btn.style.color = '#ffd700';
+  }
 }
 
 function openAddContentPrompt() {
@@ -1118,6 +1297,9 @@ function openPlanet(idx) {
     backBtn.classList.add('visible');
     modeLabel.textContent = '惑星ビュー';
     document.getElementById('create-btn').style.display = 'none';
+    
+    // 輝きボタンの状態を更新
+    updateShineButton();
   });
 }
 
