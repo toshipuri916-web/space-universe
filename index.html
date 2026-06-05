@@ -2264,28 +2264,7 @@ function buildConfirm() {
   document.getElementById('confirm-dust').textContent = sd.stella.toLocaleString();
 }
 
-// ===== Supabase DB操作関数（上記参照） =====
-      color: row.color,
-      gridX: row.grid_x,
-      gridY: row.grid_y,
-      desc: row.description,
-      tags: row.tags || [],
-      barren: row.barren,
-      pop: row.population,
-      population: row.population,  // 互換性のため両方つける
-      owner: row.owner || 'unknown',  // 所有者
-      brightness: row.brightness || 1  // 輝度
-    }));
-    
-    console.log(`✅ DB から ${loadedPlanets.length} 個の惑星を読み込みました`);
-    return loadedPlanets;
-  } catch (err) {
-    console.error('❌ DB操作エラー:', err);
-    return [];
-  }
-}
-
-async function createPlanet() {
+// ===== 惑星作成機能 =====
   const sd = SIZE_DATA[form.size];
   const color = form._color;
   const isBarren = form.civType === 'barren';
