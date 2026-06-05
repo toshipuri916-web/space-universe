@@ -1010,6 +1010,11 @@ let testUsers = [];
 let currentUserIndex = 0;
 let user = null;
 
+// 惑星データ
+let planets = [
+  {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true}
+];
+
 // ===== Supabase DB関数 =====
 
 async function loadUsersFromDB() {
