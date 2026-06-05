@@ -989,47 +989,50 @@ const AVAILABLE_TAGS = [
 // ===== グローバル変数 =====
 
 // ユーザーデータ
-const testUsers = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    name: 'toshipur1916',
-    stella: 500,
-    mothership: { population: 10000, maxCapacity: 100000 }
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440002',
-    name: 'alice_creator',
-    stella: 1200,
-    mothership: { population: 8500, maxCapacity: 100000 }
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440003',
-    name: 'bob_warrior',
-    stella: 850,
-    mothership: { population: 12000, maxCapacity: 100000 }
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440004',
-    name: 'carol_writer',
-    stella: 2100,
-    mothership: { population: 6000, maxCapacity: 100000 }
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440005',
-    name: 'dave_artist',
-    stella: 650,
-    mothership: { population: 5500, maxCapacity: 100000 }
-  }
-];
-
+let testUsers = [];
 let currentUserIndex = 0;
-let user = { ...testUsers[0] };
-
-let planets = [
-  {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true}
-];
+let user = null;
 
 // ===== Supabase DB関数 =====
+
+async function loadUsersFromDB() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('users')
+      .select('*');
+    
+    if (error) throw error;
+    
+    testUsers = data.map(dbUser => ({
+      id: dbUser.user_id,
+      name: dbUser.name,
+      stella: dbUser.stella,
+      mothership: {
+        population: dbUser.mothership_population || 0,
+        maxCapacity: 100000
+      }
+    }));
+    
+    if (testUsers.length > 0) {
+      currentUserIndex = 0;
+      user = { ...testUsers[0] };
+      updateUserStatus();
+    }
+  } catch (err) {
+    console.error('Failed to load users:', err);
+    // エラーの場合はデモ用ユーザーを使用
+    testUsers = [
+      {
+        id: '550e8400-e29b-41d4-a716-446655440001',
+        name: 'toshipur1916',
+        stella: 500,
+        mothership: { population: 10000, maxCapacity: 100000 }
+      }
+    ];
+    user = { ...testUsers[0] };
+    updateUserStatus();
+  }
+}
 
 async function loadPlanetsFromDB() {
   try {
@@ -1135,6 +1138,9 @@ let zoom = 1, offX = 0, offY = 0;
 async function initializeMap() {
   offX = window.innerWidth / 2;
   offY = window.innerHeight / 2;
+  
+  // DB からユーザーを読み込み
+  await loadUsersFromDB();
   
   // DB から既存の惑星を読み込み
   await loadPlanetsFromDB();
@@ -2695,6 +2701,7 @@ function switchUser() {
 }
 
 function updateUserStatus() {
+  document.getElementById('user-name').textContent = `👤 ${user.name}`;
   document.getElementById('user-stella').textContent = user.stella.toLocaleString();
   document.getElementById('user-mothership').textContent = user.mothership.population.toLocaleString();
 }
