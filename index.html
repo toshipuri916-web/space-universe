@@ -1045,6 +1045,11 @@ async function loadPlanetsFromDB() {
     console.log('planets.length:', planets.length);
     console.log('planets[0]:', planets[0]);
     console.log('planets[1]:', planets[1]);
+    
+    // チャンク構造に追加
+    dbPlanets.forEach(p => addToChunk(p));
+    console.log('✅ チャンクマップに追加しました');
+    
     console.log(`✅ ${dbPlanets.length}個の惑星を読み込みました`);
   } catch (err) {
     console.error('Failed to load planets:', err);
