@@ -2265,6 +2265,8 @@ function buildConfirm() {
 }
 
 // ===== 惑星作成機能 =====
+
+async function createPlanet() {
   const sd = SIZE_DATA[form.size];
   const color = form._color;
   const isBarren = form.civType === 'barren';
