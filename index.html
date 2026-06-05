@@ -949,7 +949,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ===== 設計ベースの実装 =====
 
 // ===== 定数定義 =====
-const GRID_SCALE = 10;  // 1グリッド = 10ピクセル（ズーム1倍時）
+const GRID_SCALE = 1;  // 1グリッド = 1ピクセル
 const CHUNK_SIZE = 100; // 1チャンク = 100×100 グリッド
 const BLACKHOLE_FORBIDDEN_DISTANCE = 14;  // ブラックホール禁止距離（大の2倍）
 const ZOOM_LEVELS = [100, 125, 150, 175, 200, 250, 300];
