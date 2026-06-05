@@ -2564,44 +2564,46 @@ window.addEventListener('resize', () => {
 
 drawStars();
 
-// 初期化：Supabase セッションを確認 → Google ログイン後の処理
-(async () => {
-  // セッション情報を確認
-  const { data: { session } } = await supabaseClient.auth.getSession();
+// 認証済みゲーム初期化関数
+async function initializeAuthenticatedGame(session) {
+  const { data: userData, error } = await supabaseClient
+    .from('users')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .single();
   
-  if (session) {
-    // ログイン済み：ユーザー情報を取得してゲーム開始
-    const { data: userData, error } = await supabaseClient
-      .from('users')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .single();
+  if (userData) {
+    user = {
+      id: userData.user_id,
+      name: userData.name,
+      stella: userData.stella,
+      mothership: {
+        population: userData.mothership_population || 0,
+        maxCapacity: 100000
+      }
+    };
     
-    if (userData) {
-      user = {
-        id: userData.user_id,
-        name: userData.name,
-        stella: userData.stella,
-        mothership: {
-          population: userData.mothership_population || 0,
-          maxCapacity: 100000
-        }
-      };
-      
-      // ログイン画面を非表示 → ゲーム画面を表示
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      
-      // ゲーム初期化
-      await initializeMap();
-      updateUserStatus();
-    }
+    // ログイン画面を非表示 → ゲーム画面を表示
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    
+    // ゲーム初期化
+    await initializeMap();
+    updateUserStatus();
+  }
+}
+
+// Supabase 認証状態をリッスン（ページロード時 + OAuth ログイン後も自動対応）
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  if (session) {
+    // ログイン状態 → ゲーム開始
+    await initializeAuthenticatedGame(session);
   } else {
-    // ログイン未認証：ログイン画面を表示
+    // ログアウト状態 → ログイン画面
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
   }
-})();
+});
 
 // ブラックホールアニメーションループ
 function animateBlackhole() {
