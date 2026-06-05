@@ -1949,8 +1949,17 @@ app.addEventListener('mousemove', e => {
   const gridY = Math.round((e.clientY / zoom - offY) / GRID_SCALE);
   document.getElementById('cursor-coords').textContent = `X${gridX} Y${gridY}`;
   
-  if (dragging) {
-    wasDragging = true;
+  if (dragging && !wasDragging) {
+    // 5ピクセル以上動いたらドラッグと判定
+    const dx = e.clientX - (dragX + offX);
+    const dy = e.clientY - (dragY + offY);
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > 5) {
+      wasDragging = true;
+    }
+  }
+  
+  if (dragging && wasDragging) {
     offX = e.clientX - dragX;
     offY = e.clientY - dragY;
     render();
@@ -1995,7 +2004,20 @@ app.addEventListener('touchmove', e => {
 }, { passive: true });
 
 app.addEventListener('touchend', e => {
+  // ボタンやモーダル内のクリックは無視
+  if (e.target.closest('#place-actions') || e.target.closest('#modal')) {
+    dragging = false;
+    wasDragging = false;
+    return;
+  }
+  
   dragging = false;
+  
+  // スライドではなくタップだった場合のみ onMapTouch を呼ぶ
+  if (placingMode && !wasDragging) {
+    onMapTouch(e);
+  }
+  
   wasDragging = false;
 }, { passive: true });
 
