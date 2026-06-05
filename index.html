@@ -873,8 +873,14 @@
     
     <button id="create-btn" onclick="openCreateModal()" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 12px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s; margin-bottom: 16px;\">🔭 未解の惑星を探索</button>
     
-    <div id="handbook-list" style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 200px); overflow-y: auto; -webkit-overflow-scrolling: touch;">
+    <div id="handbook-list" style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 200px); overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
       <!-- 惑星リストがここに動的に挿入される -->
+    </div>
+    
+    <!-- スクロールボタン -->
+    <div style="display: flex; gap: 6px; margin-top: 12px; justify-content: center;">
+      <button onclick="scrollHandbookUp()" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.28)'" onmouseout="this.style.background='rgba(100,180,255,0.15)'">▲</button>
+      <button onclick="scrollHandbookDown()" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.28)'" onmouseout="this.style.background='rgba(100,180,255,0.15)'">▼</button>
     </div>
   </div>
 
@@ -2460,6 +2466,16 @@ function animateBlackhole() {
 }
 
 // ===== 宇宙手帳機能 =====
+
+function scrollHandbookUp() {
+  const list = document.getElementById('handbook-list');
+  list.scrollBy({ top: -100, behavior: 'smooth' });
+}
+
+function scrollHandbookDown() {
+  const list = document.getElementById('handbook-list');
+  list.scrollBy({ top: 100, behavior: 'smooth' });
+}
 
 function updateHandbookList() {
   const list = document.getElementById('handbook-list');
