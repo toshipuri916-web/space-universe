@@ -1027,12 +1027,17 @@ async function loadPlanetsFromDB() {
       desc: row.description  // 互換性のため
     }));
     
+    console.log('dbPlanets.length:', dbPlanets.length);  // デバッグ
+    console.log('dbPlanets[0]:', dbPlanets[0]);  // デバッグ
+    
     // ブラックホールを除いた惑星をセット
     planets = [
       {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
       ...dbPlanets
     ];
     
+    console.log('planets.length after update:', planets.length);  // デバッグ
+    console.log('planets[1] after update:', planets[1]);  // デバッグ
     console.log(`✅ ${dbPlanets.length}個の惑星を読み込みました`);
   } catch (err) {
     console.error('Failed to load planets:', err);
