@@ -986,7 +986,7 @@ const user = {
   name: 'toshipur1916',
   stella: 500,
   mothership: {
-    population: 0,
+    population: 10000,  // テスト用に増加
     maxCapacity: 100000,
   }
 };
@@ -1717,15 +1717,9 @@ function openPlanet(idx) {
     // 輝きボタンの状態を更新
     updateShineButton();
     
-    // 侵略ボタンの状態を更新（文明ありで、自分の惑星でない場合のみ表示）
+    // 侵略ボタンの状態を更新（常に表示、クリック時に条件チェック）
     const invadeBtn = document.getElementById('invade-btn');
-    const isOwner = p.owner === user.name;
-    const hasPopulation = !p.barren && p.population > 0;
-    if (hasPopulation && !isOwner && user.mothership.population > 0) {
-      invadeBtn.style.display = 'block';
-    } else {
-      invadeBtn.style.display = 'none';
-    }
+    invadeBtn.style.display = 'block';
   });
 }
 
@@ -2623,6 +2617,22 @@ let currentInvadePlanet = null;
 function openInvadeDialog() {
   if (curIdx === -1) return;
   const planet = planets[curIdx];
+  
+  // 条件チェック
+  if (planet.barren) {
+    alert('文明のない惑星は侵略できません');
+    return;
+  }
+  
+  if (planet.owner === user.name) {
+    alert('自分の惑星は侵略できません');
+    return;
+  }
+  
+  if (user.mothership.population <= 0) {
+    alert('母船に人口がありません');
+    return;
+  }
   
   currentInvadePlanet = planet;
   document.getElementById('invade-dialog-title').textContent = planet.name + 'に侵略';
