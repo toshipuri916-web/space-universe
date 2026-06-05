@@ -873,7 +873,7 @@
     
     <button id="create-btn" onclick="openCreateModal()" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 12px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s; margin-bottom: 16px;\">🔭 未解の惑星を探索</button>
     
-    <div id="handbook-list" style="display: flex; flex-direction: column; gap: 8px;">
+    <div id="handbook-list" style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 200px); overflow-y: auto; -webkit-overflow-scrolling: touch;">
       <!-- 惑星リストがここに動的に挿入される -->
     </div>
   </div>
