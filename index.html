@@ -979,14 +979,20 @@ const AVAILABLE_TAGS = [
   'ショップ','雑貨','食品','ハンドメイド','その他'
 ];
 
+// ===== Supabase 初期化 =====
+const SUPABASE_URL = 'https://zkcahbejsaegfpxlunkc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ecBow9OY0mHm_GI55eQXSw_6Bb3vTSH';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ===== グローバル変数 =====
 
-// ユーザーデータ
+// ユーザーデータ（現在はローカル・将来的には Auth で管理）
 const user = {
+  id: '550e8400-e29b-41d4-a716-446655440001',  // toshipur1916
   name: 'toshipur1916',
   stella: 500,
   mothership: {
-    population: 10000,  // テスト用に増加
+    population: 10000,
     maxCapacity: 100000,
   }
 };
@@ -994,6 +1000,101 @@ const user = {
 let planets = [
   {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true}
 ];
+
+// ===== Supabase DB関数 =====
+
+async function loadPlanetsFromDB() {
+  try {
+    const { data, error } = await supabase
+      .from('planets')
+      .select('*');
+    
+    if (error) {
+      console.error('Error loading planets:', error);
+      return;
+    }
+    
+    // DB から読み込んだ惑星をメモリに変換
+    const dbPlanets = data.map(row => ({
+      id: row.planet_id,
+      gridX: row.grid_x,
+      gridY: row.grid_y,
+      name: row.name,
+      size: row.size,
+      color: row.color,
+      population: row.population,
+      civType: row.civ_type,
+      description: row.description,
+      tags: row.tags || [],
+      brightness: row.brightness || 1,
+      barren: row.civ_type === 3,
+      owner_id: row.owner_id
+    }));
+    
+    // ブラックホールを除いた惑星をセット
+    planets = [
+      {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
+      ...dbPlanets
+    ];
+    
+    console.log(`✅ ${dbPlanets.length}個の惑星を読み込みました`);
+    render();
+  } catch (err) {
+    console.error('Failed to load planets:', err);
+  }
+}
+
+async function savePlanetToDB(planet) {
+  try {
+    const { error } = await supabase
+      .from('planets')
+      .insert([{
+        planet_id: planet.id,
+        grid_x: planet.gridX,
+        grid_y: planet.gridY,
+        name: planet.name,
+        size: planet.size,
+        color: planet.color,
+        owner_id: planet.owner_id,
+        population: planet.population,
+        civ_type: planet.civType || 1,
+        description: planet.description,
+        tags: planet.tags,
+        brightness: planet.brightness || 1
+      }]);
+    
+    if (error) {
+      console.error('Error saving planet:', error);
+      return false;
+    }
+    
+    console.log(`✅ 惑星「${planet.name}」を DB に保存しました`);
+    return true;
+  } catch (err) {
+    console.error('Failed to save planet:', err);
+    return false;
+  }
+}
+
+async function updatePlanetInDB(planetId, updates) {
+  try {
+    const { error } = await supabase
+      .from('planets')
+      .update(updates)
+      .eq('planet_id', planetId);
+    
+    if (error) {
+      console.error('Error updating planet:', error);
+      return false;
+    }
+    
+    console.log(`✅ 惑星 ${planetId} を更新しました`);
+    return true;
+  } catch (err) {
+    console.error('Failed to update planet:', err);
+    return false;
+  }
+}
 
 // ブラックホール描画
 let bhCanvas = null;
@@ -1008,6 +1109,15 @@ let zoom = 1, offX = 0, offY = 0;
 async function initializeMap() {
   offX = window.innerWidth / 2;
   offY = window.innerHeight / 2;
+  
+  // Supabase から惑星データを読み込む
+  await loadPlanetsFromDB();
+  
+  // Canvas 初期化
+  initBlackHoleCanvas();
+  drawStars();
+  render();
+}
   
   // DBから既存の惑星を読み込み
   const dbPlanets = await loadPlanetsFromDB();
@@ -2228,7 +2338,7 @@ async function loadPlanetsFromDB() {
   }
 }
 
-function createPlanet() {
+async function createPlanet() {
   const sd = SIZE_DATA[form.size];
   const color = form._color;
   const isBarren = form.civType === 'barren';
@@ -2240,6 +2350,11 @@ function createPlanet() {
     defaultDesc = 'フレーバーテキストが刻まれている...';
   }
   
+  // civ_type を数値に変換（1=文明あり, 2=滅びゆく, 3=文明なし）
+  let civTypeNum = 1;
+  if (form.civType === 'declining') civTypeNum = 2;
+  else if (form.civType === 'barren') civTypeNum = 3;
+  
   const newPlanet = {
     id: gridToID(form._placedGridX, form._placedGridY),
     name: form.name,
@@ -2247,21 +2362,25 @@ function createPlanet() {
     color: color,
     gridX: form._placedGridX,
     gridY: form._placedGridY,
-    desc: form.desc || defaultDesc,
+    description: form.desc || defaultDesc,
     tags: [...form.tags],
     population: isBarren ? 0 : 100,
+    civType: civTypeNum,  // DB用：1,2,3
     barren: isBarren,
-    civType: form.civType,  // 文明タイプを保存
-    pop: isBarren ? 0 : 100,  // 互換性のため両方つける
-    owner: user.name,  // 所有者を記録
+    owner_id: user.id,  // UUIDで記録
     brightness: 1  // 初期輝度
   };
   
   planets.push(newPlanet);
   addToChunk(newPlanet);
   
-  // DB に非同期で保存（完成演出は待たない）
-  savePlanetToDB(newPlanet).catch(err => console.error('DB保存失敗:', err));
+  // DB に保存（待つ）
+  const saved = await savePlanetToDB(newPlanet);
+  if (!saved) {
+    alert('惑星のDB保存に失敗しました');
+    planets.pop();
+    return;
+  }
   
   // 完成演出
   document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
@@ -2714,7 +2833,7 @@ function updateInvadePrediction() {
   document.getElementById('invade-dialog-percentage').textContent = percentage + '%';
 }
 
-function confirmInvade() {
+async function confirmInvade() {
   if (!currentInvadePlanet) return;
   
   const input = document.getElementById('invade-dialog-input');
@@ -2747,8 +2866,14 @@ function confirmInvade() {
     );
     
     // 惑星の所有者を変更
-    currentInvadePlanet.owner = user.name;
+    currentInvadePlanet.owner_id = user.id;
     currentInvadePlanet.population = Math.max(100, invadeForce - defenseForce);
+    
+    // DB に保存
+    await updatePlanetInDB(currentInvadePlanet.id, {
+      owner_id: user.id,
+      population: currentInvadePlanet.population
+    });
   } else {
     // 侵略失敗
     alert(
