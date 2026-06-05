@@ -2216,10 +2216,14 @@ function enterPlaceMode() {
 
 function cancelPlaceMode() {
   placingMode = false;
+  dragging = false;
+  wasDragging = false;
   app.classList.remove('placing');
+  app.classList.remove('grabbing');
   document.getElementById('place-mode-ui').classList.remove('active');
   document.getElementById('place-preview').style.display = 'none';
   document.getElementById('create-btn').style.display = '';
+  document.getElementById('handbook-panel').style.transform = 'translateX(0)';  // ← 宇宙手帳を表示
   document.getElementById('modal-bg').classList.add('active');
   currentStep = 2;
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -2239,10 +2243,14 @@ function confirmPlace() {
   
   // 場所が確定されたので、配置モードを終了
   placingMode = false;
+  dragging = false;
+  wasDragging = false;
   app.classList.remove('placing');
+  app.classList.remove('grabbing');
   document.getElementById('place-mode-ui').classList.remove('active');
   document.getElementById('place-preview').style.display = 'none';
   document.getElementById('create-btn').style.display = '';
+  document.getElementById('handbook-panel').style.transform = 'translateX(0)';  // ← 宇宙手帳を表示
   
   form._placedGridX = placeSelectedGridX;
   form._placedGridY = placeSelectedGridY;
