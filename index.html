@@ -1935,7 +1935,7 @@ function updateZoomDisplay() {
 
 app.addEventListener('mousedown', e => {
   const modalOpen = document.getElementById('modal-bg').classList.contains('active');
-  if (curIdx !== -1 || modalOpen || placingMode) return;
+  if (curIdx !== -1 || modalOpen) return;  // placingMode は除外
   dragging = true;
   wasDragging = false;
   dragX = e.clientX - offX;
@@ -2073,6 +2073,16 @@ function updateFixedPreview(gridX, gridY) {
     preview.style.width = sz + 'px';
     preview.style.height = sz + 'px';
   }
+  
+  // 背景とグロウを再設定（enterPlaceMode と同じ）
+  const color = form._color;
+  const isBarren = form.civType === 'barren';
+  preview.style.background = isBarren
+    ? `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`
+    : `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`;
+  preview.style.boxShadow = isBarren
+    ? `0 0 8px 2px ${color}33`
+    : `0 0 18px 5px ${color}66`;
   
   // 「ここに作る」ボタンを強調表示
   const confirmBtn = document.getElementById('place-confirm');
