@@ -589,7 +589,21 @@
   </style>
 </head>
 <body>
-<div id="app">
+<!-- ===== ログイン画面 ===== -->
+<div id="login-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;">
+  <div style="text-align: center; max-width: 400px;">
+    <div style="color: #fff; font-size: 32px; letter-spacing: 3px; margin-bottom: 10px;">🌌</div>
+    <div style="color: #fff; font-size: 20px; letter-spacing: 2px; margin-bottom: 40px;">宇宙創造プラットフォーム</div>
+    
+    <div style="color: rgba(255,255,255,0.5); font-size: 12px; letter-spacing: 1px; margin-bottom: 20px;">👤 ユーザーを選択</div>
+    
+    <div id="user-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;"></div>
+    
+    <div style="color: rgba(255,255,255,0.3); font-size: 11px; letter-spacing: 0.5px;">（テスト用：管理者モード）</div>
+  </div>
+</div>
+
+<div id="app" style="display: none;">
   <canvas id="starfield"></canvas>
   <canvas id="bhCanvas"></canvas>
   <canvas id="forbiddenCanvas"></canvas>
@@ -883,6 +897,9 @@
       <button onclick="scrollHandbookUp()" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.28)'" onmouseout="this.style.background='rgba(100,180,255,0.15)'">▲</button>
       <button onclick="scrollHandbookDown()" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.28)'" onmouseout="this.style.background='rgba(100,180,255,0.15)'">▼</button>
     </div>
+    
+    <!-- ログアウトボタン -->
+    <button onclick="logout()" style="width: 100%; padding: 10px; margin-top: 16px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 12px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">🚪 ログアウト</button>
   </div>
 
 <!-- 侵略ダイアログ -->
@@ -1014,12 +1031,9 @@ async function loadUsersFromDB() {
     }));
     
     if (testUsers.length > 0) {
-      currentUserIndex = 0;
-      user = { ...testUsers[0] };
-      updateUserStatus();
+      showLoginUI();
     }
   } catch (err) {
-    console.error('Failed to load users:', err);
     // エラーの場合はデモ用ユーザーを使用
     testUsers = [
       {
@@ -1029,9 +1043,44 @@ async function loadUsersFromDB() {
         mothership: { population: 10000, maxCapacity: 100000 }
       }
     ];
-    user = { ...testUsers[0] };
-    updateUserStatus();
+    showLoginUI();
   }
+}
+
+function showLoginUI() {
+  const userList = document.getElementById('user-list');
+  userList.innerHTML = '';
+  
+  testUsers.forEach((u, idx) => {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'padding: 14px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 12px; color: #88ccff; cursor: pointer; font-size: 14px; letter-spacing: 1px; font-family: "Courier New", monospace; transition: all 0.2s;';
+    btn.onmouseover = () => btn.style.background = 'rgba(100,180,255,0.25)';
+    btn.onmouseout = () => btn.style.background = 'rgba(100,180,255,0.1)';
+    btn.textContent = `👤 ${u.name}`;
+    btn.onclick = () => login(idx);
+    userList.appendChild(btn);
+  });
+}
+
+function login(userIndex) {
+  currentUserIndex = userIndex;
+  user = { ...testUsers[userIndex] };
+  
+  // ログイン画面を非表示
+  document.getElementById('login-screen').style.display = 'none';
+  // アプリケーション画面を表示
+  document.getElementById('app').style.display = 'block';
+  
+  // ゲーム初期化
+  initializeMap();
+  updateUserStatus();
+}
+
+function logout() {
+  // アプリケーション画面を非表示
+  document.getElementById('app').style.display = 'none';
+  // ログイン画面を表示
+  document.getElementById('login-screen').style.display = 'flex';
 }
 
 async function loadPlanetsFromDB() {
@@ -1138,9 +1187,6 @@ let zoom = 1, offX = 0, offY = 0;
 async function initializeMap() {
   offX = window.innerWidth / 2;
   offY = window.innerHeight / 2;
-  
-  // DB からユーザーを読み込み
-  await loadUsersFromDB();
   
   // DB から既存の惑星を読み込み
   await loadPlanetsFromDB();
@@ -2459,14 +2505,10 @@ window.addEventListener('resize', () => {
 
 drawStars();
 
-// 非同期で初期化（DB読み込み）
+// 初期化：DB からユーザーを読み込んでログイン画面を表示
 (async () => {
-  await initializeMap();  // (0,0) を中央に配置 + DB から惑星を読み込み
-  initBlackhole();
-  render();
-  drawForbiddenAreas();
-  animateBlackhole();
-  addToChunk(planets[0]);
+  await loadUsersFromDB();
+})();
 })();
 
 // ブラックホールアニメーションループ
@@ -2764,9 +2806,6 @@ function confirmSend() {
   // 成功メッセージ
   alert(`${currentSendPlanet.name}から母船へ${sendAmount.toLocaleString()}人を送信しました！\n現在の母船人口: ${user.mothership.population.toLocaleString()}`);
 }
-
-// 最初のステータス更新
-updateUserStatus();
 
 // ===== 侵略システム =====
 
