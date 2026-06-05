@@ -1019,9 +1019,12 @@ let planets = [
 
 async function loadUsersFromDB() {
   try {
+    console.log('ユーザー読み込み開始...');
     const { data, error } = await supabaseClient
       .from('users')
       .select('*');
+    
+    console.log('DB レスポンス:', data, error);
     
     if (error) throw error;
     
@@ -1035,11 +1038,16 @@ async function loadUsersFromDB() {
       }
     }));
     
+    console.log('読み込んだユーザー:', testUsers);
+    
     if (testUsers.length > 0) {
+      console.log('ログイン画面を表示');
       showLoginUI();
     }
   } catch (err) {
+    console.error('ユーザー読み込みエラー:', err);
     // エラーの場合はデモ用ユーザーを使用
+    console.log('デモユーザーでフォールバック');
     testUsers = [
       {
         id: '550e8400-e29b-41d4-a716-446655440001',
