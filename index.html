@@ -2187,6 +2187,9 @@ function createPlanet() {
 }
 
 function openCreateModal() {
+  // 宇宙手帳パネルを閉じる
+  document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
+  
   form = {civType: null, size: null, tags: [], name: '', desc: '', _color: '#4a9edd', _placedGridX: null, _placedGridY: null};
   currentStep = 1;
   document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); s.style.display = ''; });
@@ -2309,6 +2312,9 @@ function zoomToPlanet(planet) {
   const W = window.innerWidth, H = window.innerHeight;
   const targetZoom = 2;
   
+  // まずパネルを閉じる
+  document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
+  
   // アニメーション変数
   let progress = 0;
   const duration = 800; // ミリ秒
@@ -2342,8 +2348,11 @@ function zoomToPlanet(planet) {
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      // パネルを閉じる
-      document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
+      // ズーム完了後、惑星ビューを開く
+      const idx = planets.findIndex(p => p.gridX === planet.gridX && p.gridY === planet.gridY);
+      if (idx !== -1) {
+        openPlanet(idx);
+      }
     }
   }
   
