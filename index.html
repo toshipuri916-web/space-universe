@@ -979,20 +979,15 @@ const AVAILABLE_TAGS = [
   'ショップ','雑貨','食品','ハンドメイド','その他'
 ];
 
-// ===== Supabase 初期化 =====
-const SUPABASE_URL = 'https://zkcahbejsaegfpxlunkc.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_ecBow9OY0mHm_GI55eQXSw_6Bb3vTSH';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 // ===== グローバル変数 =====
 
-// ユーザーデータ（現在はローカル・将来的には Auth で管理）
+// ユーザーデータ
 const user = {
   id: '550e8400-e29b-41d4-a716-446655440001',  // toshipur1916
   name: 'toshipur1916',
   stella: 500,
   mothership: {
-    population: 10000,
+    population: 10000,  // テスト用に増加
     maxCapacity: 100000,
   }
 };
@@ -1005,7 +1000,7 @@ let planets = [
 
 async function loadPlanetsFromDB() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('planets')
       .select('*');
     
@@ -1028,7 +1023,8 @@ async function loadPlanetsFromDB() {
       tags: row.tags || [],
       brightness: row.brightness || 1,
       barren: row.civ_type === 3,
-      owner_id: row.owner_id
+      owner_id: row.owner_id,
+      desc: row.description  // 互換性のため
     }));
     
     // ブラックホールを除いた惑星をセット
@@ -1038,7 +1034,6 @@ async function loadPlanetsFromDB() {
     ];
     
     console.log(`✅ ${dbPlanets.length}個の惑星を読み込みました`);
-    render();
   } catch (err) {
     console.error('Failed to load planets:', err);
   }
@@ -1046,7 +1041,7 @@ async function loadPlanetsFromDB() {
 
 async function savePlanetToDB(planet) {
   try {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('planets')
       .insert([{
         planet_id: planet.id,
@@ -1058,7 +1053,7 @@ async function savePlanetToDB(planet) {
         owner_id: planet.owner_id,
         population: planet.population,
         civ_type: planet.civType || 1,
-        description: planet.description,
+        description: planet.description || planet.desc,
         tags: planet.tags,
         brightness: planet.brightness || 1
       }]);
@@ -1078,7 +1073,7 @@ async function savePlanetToDB(planet) {
 
 async function updatePlanetInDB(planetId, updates) {
   try {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('planets')
       .update(updates)
       .eq('planet_id', planetId);
@@ -1110,23 +1105,13 @@ async function initializeMap() {
   offX = window.innerWidth / 2;
   offY = window.innerHeight / 2;
   
-  // Supabase から惑星データを読み込む
+  // DB から既存の惑星を読み込み
   await loadPlanetsFromDB();
   
   // Canvas 初期化
   initBlackHoleCanvas();
   drawStars();
   render();
-}
-  
-  // DBから既存の惑星を読み込み
-  const dbPlanets = await loadPlanetsFromDB();
-  if (dbPlanets.length > 0) {
-    planets = dbPlanets;
-    // チャンク構造も再構築
-    planets.forEach(p => addToChunk(p));
-    console.log(`✅ 起動時に ${planets.length} 個の惑星を読み込みました`);
-  }
 }
 let dragging = false, dragX = 0, dragY = 0, wasDragging = false;
 let placingMode = false;
@@ -2363,11 +2348,12 @@ async function createPlanet() {
     gridX: form._placedGridX,
     gridY: form._placedGridY,
     description: form.desc || defaultDesc,
+    desc: form.desc || defaultDesc,  // 互換性
     tags: [...form.tags],
     population: isBarren ? 0 : 100,
-    civType: civTypeNum,  // DB用：1,2,3
     barren: isBarren,
-    owner_id: user.id,  // UUIDで記録
+    civType: civTypeNum,  // DB用：1,2,3
+    owner_id: user.id,
     brightness: 1  // 初期輝度
   };
   
