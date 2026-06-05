@@ -2218,6 +2218,8 @@ function enterPlaceMode() {
   const handbook = document.getElementById('handbook-panel');
   handbook.style.transform = 'translateX(100%)';
   handbook.style.pointerEvents = 'none';  // ← クリック無効
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
   app.classList.add('placing');
   placingMode = true;
   placeSelectedGridX = null;
@@ -2256,6 +2258,8 @@ function cancelPlaceMode() {
   const handbook = document.getElementById('handbook-panel');
   handbook.style.transform = 'translateX(0)';
   handbook.style.pointerEvents = 'auto';  // ← クリック有効に戻す
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
   document.getElementById('modal-bg').classList.add('active');
   currentStep = 2;
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -2285,6 +2289,8 @@ function confirmPlace() {
   const handbook = document.getElementById('handbook-panel');
   handbook.style.transform = 'translateX(0)';
   handbook.style.pointerEvents = 'auto';  // ← クリック有効に戻す
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
   
   form._placedGridX = placeSelectedGridX;
   form._placedGridY = placeSelectedGridY;
@@ -2661,12 +2667,16 @@ document.getElementById('handbook-btn').addEventListener('click', () => {
     panel.style.transform = 'translateX(100%)';
   } else {
     panel.style.transform = 'translateX(0px)';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     updateHandbookList();
   }
 });
 
 document.getElementById('handbook-close').addEventListener('click', () => {
   document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
 });
 
 // 惑星作成後にハンドブックを更新
