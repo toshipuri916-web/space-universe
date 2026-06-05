@@ -7,9 +7,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #000; font-family: 'Courier New', monospace; scrollbar-gutter: stable; }
+    html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
     
-    #app { width: 100%; height: 100dvh; position: relative; overflow: hidden; cursor: grab; }
+    #app { width: 100vw; height: 100dvh; position: relative; overflow: hidden; cursor: grab; }
     #app.grabbing { cursor: grabbing; }
     
     canvas#starfield { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
@@ -589,21 +589,7 @@
   </style>
 </head>
 <body>
-<!-- ===== ログイン画面 ===== -->
-<div id="login-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;">
-  <div style="text-align: center; max-width: 400px;">
-    <div style="color: #fff; font-size: 32px; letter-spacing: 3px; margin-bottom: 10px;">🌌</div>
-    <div style="color: #fff; font-size: 20px; letter-spacing: 2px; margin-bottom: 40px;">宇宙創造プラットフォーム</div>
-    
-    <div style="color: rgba(255,255,255,0.5); font-size: 12px; letter-spacing: 1px; margin-bottom: 20px;">👤 ユーザーを選択</div>
-    
-    <div id="user-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;"></div>
-    
-    <div style="color: rgba(255,255,255,0.3); font-size: 11px; letter-spacing: 0.5px;">（テスト用：管理者モード）</div>
-  </div>
-</div>
-
-<div id="app" style="display: none;">
+<div id="app">
   <canvas id="starfield"></canvas>
   <canvas id="bhCanvas"></canvas>
   <canvas id="forbiddenCanvas"></canvas>
@@ -619,7 +605,6 @@
     
     <div class="pv-actions">
       <button class="pv-btn visit" onclick="visitPlanet()" style="flex: 1;">訪問</button>
-      <button class="pv-btn" id="invade-btn" onclick="openInvadeDialog()" style="flex: 1; background: rgba(255,60,60,0.15); border: 1px solid rgba(255,60,60,0.4); color: #ff6666; display: none;">⚔️ 侵略する</button>
       <button class="pv-btn" id="shine-btn" onclick="shinePlanet()" style="flex: 1; background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700;">✨ この星に輝きを与える</button>
     </div>
     <div class="swipe-hint">
@@ -865,103 +850,19 @@
   <!-- 宇宙手帳パネル -->
   <button id="handbook-btn" style="position: absolute; top: 18px; right: 18px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; padding: 9px 16px; border-radius: 20px; font-size: 11px; cursor: pointer; letter-spacing: 1px; z-index: 50; font-family: 'Courier New', monospace; transition: all 0.2s;">📖 宇宙手帳</button>
 
-  <div id="handbook-panel" style="position: fixed; top: 0; right: 0; width: 300px; height: 100dvh; background: rgba(8,10,20,0.98); border-left: 1px solid rgba(100,180,255,0.3); transform: translateX(100%); transition: transform 0.3s ease; z-index: 60; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column;">
+  <div id="handbook-panel" style="position: fixed; top: 0; right: 0; width: 300px; height: 100vh; background: rgba(8,10,20,0.98); border-left: 1px solid rgba(100,180,255,0.3); transform: translateX(100%); transition: transform 0.3s ease; z-index: 60; overflow-y: auto; padding: 20px; box-sizing: border-box;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <div style="color: #fff; font-size: 14px; letter-spacing: 2px;">📖 宇宙手帳</div>
       <button id="handbook-close" style="background: none; border: none; color: rgba(255,255,255,0.4); font-size: 18px; cursor: pointer; padding: 0;">✕</button>
     </div>
     
-    
-    <!-- ステータスパネル -->
-    <div style="background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 12px; padding: 14px; margin-bottom: 16px; cursor: pointer; transition: all 0.2s;" onclick="switchUser()" onmouseover="this.style.background='rgba(100,180,255,0.15)'" onmouseout="this.style.background='rgba(100,180,255,0.08)'">
-      <div style="color: #fff; font-size: 13px; letter-spacing: 1px; margin-bottom: 10px;" id="user-name">👤 toshipur1916</div>
-      <div style="display: flex; flex-direction: column; gap: 7px; font-size: 11px;">
-        <div style="color: rgba(255,255,255,0.6);">
-          ⭐ ステラ: <span id="user-stella" style="color: #88ccff;">500</span>
-        </div>
-        <div style="color: rgba(255,255,255,0.6);">
-          🚀 母船人口: <span id="user-mothership" style="color: #88ccff;">0</span>
-        </div>
-      </div>
-      <div style="color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 8px; text-align: center; letter-spacing: 0.5px;">クリックで切り替え</div>
-    </div>
-    
     <button id="create-btn" onclick="openCreateModal()" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 12px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s; margin-bottom: 16px;\">🔭 未解の惑星を探索</button>
     
-    <div id="handbook-list" style="display: flex; flex-direction: column; gap: 8px; max-height: calc(100dvh - 300px); overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+    <div id="handbook-list" style="display: flex; flex-direction: column; gap: 8px;">
       <!-- 惑星リストがここに動的に挿入される -->
     </div>
-    
-    <!-- スクロールボタン -->
-    <div style="display: flex; gap: 6px; margin-top: 12px; justify-content: center;">
-      <button onclick="scrollHandbookUp()" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.28)'" onmouseout="this.style.background='rgba(100,180,255,0.15)'">▲</button>
-      <button onclick="scrollHandbookDown()" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.28)'" onmouseout="this.style.background='rgba(100,180,255,0.15)'">▼</button>
-    </div>
-    
-    <!-- ログアウトボタン -->
-    <button onclick="logout()" style="width: 100%; padding: 10px; margin-top: 16px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 12px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">🚪 ログアウト</button>
   </div>
 
-<!-- 侵略ダイアログ -->
-<div id="invade-dialog-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 500;">
-  <div style="background: rgba(8,10,20,0.98); border: 1px solid rgba(255,60,60,0.3); border-radius: 16px; padding: 28px; width: min(340px, 90vw); box-shadow: 0 0 60px rgba(255,60,60,0.1);">
-    <div style="color: #fff; font-size: 14px; letter-spacing: 2px; margin-bottom: 6px; text-align: center;" id="invade-dialog-title">アルカディア星に侵略</div>
-    <div style="color: rgba(255,255,255,0.4); font-size: 10px; letter-spacing: 1px; text-align: center; margin-bottom: 20px;">⚔️ 防衛戦力を選択</div>
-    
-    <div style="background: rgba(255,60,60,0.08); border: 1px solid rgba(255,60,60,0.3); border-radius: 10px; padding: 14px; margin-bottom: 18px;">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-        <div>
-          <div style="color: rgba(255,255,255,0.5); font-size: 9px; margin-bottom: 4px;">🚀 母船の戦力</div>
-          <div style="color: #88ccff; font-size: 16px; letter-spacing: 1px;" id="invade-mothership-power">15,000</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="color: rgba(255,255,255,0.5); font-size: 9px; margin-bottom: 4px;">👁️ 相手の防衛</div>
-          <div style="color: #ffd700; font-size: 16px; letter-spacing: 1px;" id="invade-enemy-defense">4,820</div>
-        </div>
-      </div>
-      <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-        <div id="invade-power-bar" style="height: 100%; background: linear-gradient(to right, #88ccff, #ffaa00); width: 75%;"></div>
-      </div>
-      <div style="color: rgba(255,255,255,0.3); font-size: 8px; margin-top: 6px; text-align: center;" id="invade-prediction">勝率: 75%</div>
-    </div>
-    
-    <div style="margin-bottom: 20px;">
-      <div style="color: rgba(255,255,255,0.5); font-size: 10px; margin-bottom: 8px;">投入する戦力を選択</div>
-      <input type="number" id="invade-dialog-input" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,60,60,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 14px; outline: none;" placeholder="0" min="0">
-      <div style="color: rgba(255,255,255,0.3); font-size: 9px; margin-top: 6px; text-align: right;" id="invade-dialog-percentage">0%</div>
-    </div>
-    
-    <div style="display: flex; gap: 10px;">
-      <button onclick="closeInvadeDialog()" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); border-radius: 8px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 12px; transition: all 0.2s;">キャンセル</button>
-      <button onclick="confirmInvade()" style="flex: 1; padding: 10px; background: rgba(255,60,60,0.2); border: 1px solid rgba(255,60,60,0.5); color: #ff6666; border-radius: 8px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 12px; transition: all 0.2s;">⚔️ 侵略実行</button>
-    </div>
-  </div>
-</div>
-
-</div>
-
-<!-- 母船送信ダイアログ -->
-<div id="send-dialog-bg" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 500;">
-  <div style="background: rgba(8,10,20,0.98); border: 1px solid rgba(100,180,255,0.3); border-radius: 16px; padding: 28px; width: min(320px, 90vw); box-shadow: 0 0 60px rgba(100,180,255,0.1);">
-    <div style="color: #fff; font-size: 14px; letter-spacing: 2px; margin-bottom: 6px; text-align: center;" id="send-dialog-title">アルカディア星</div>
-    <div style="color: rgba(255,255,255,0.4); font-size: 10px; letter-spacing: 1px; text-align: center; margin-bottom: 20px;">から母船へ人口を送信</div>
-    
-    <div style="background: rgba(100,180,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 18px;">
-      <div style="color: rgba(255,255,255,0.5); font-size: 10px; margin-bottom: 4px;">利用可能な人口</div>
-      <div style="color: #88ccff; font-size: 16px; letter-spacing: 1px;" id="send-dialog-available">4,820</div>
-    </div>
-    
-    <div style="margin-bottom: 20px;">
-      <div style="color: rgba(255,255,255,0.5); font-size: 10px; margin-bottom: 8px;">送信数を入力</div>
-      <input type="number" id="send-dialog-input" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 14px; outline: none;" placeholder="0" min="0">
-      <div style="color: rgba(255,255,255,0.3); font-size: 9px; margin-top: 6px; text-align: right;" id="send-dialog-percentage">0%</div>
-    </div>
-    
-    <div style="display: flex; gap: 10px;">
-      <button onclick="closeSendDialog()" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); border-radius: 8px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 12px; transition: all 0.2s;">キャンセル</button>
-      <button onclick="confirmSend()" style="flex: 1; padding: 10px; background: rgba(100,180,255,0.2); border: 1px solid rgba(100,180,255,0.5); color: #88ccff; border-radius: 8px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 12px; transition: all 0.2s;">送信</button>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -973,7 +874,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ===== 設計ベースの実装 =====
 
 // ===== 定数定義 =====
-const GRID_SCALE = 1;  // 1グリッド = 1ピクセル
+const GRID_SCALE = 1;  // 1グリッド = 1ピクセル（座標が10倍細かくなる）  // 1グリッド = 10ピクセル（ズーム1倍時）
 const CHUNK_SIZE = 100; // 1チャンク = 100×100 グリッド
 const BLACKHOLE_FORBIDDEN_DISTANCE = 14;  // ブラックホール禁止距離（大の2倍）
 const ZOOM_LEVELS = [100, 125, 150, 175, 200, 250, 300];
@@ -1004,188 +905,9 @@ const AVAILABLE_TAGS = [
 ];
 
 // ===== グローバル変数 =====
-
-// ユーザーデータ
-let testUsers = [];
-let currentUserIndex = 0;
-let user = null;
-
-// 惑星データ
 let planets = [
   {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true}
 ];
-
-// ===== Supabase DB関数 =====
-
-async function loadUsersFromDB() {
-  try {
-    console.log('ユーザー読み込み開始...');
-    const { data, error } = await supabaseClient
-      .from('users')
-      .select('*');
-    
-    console.log('DB レスポンス:', data, error);
-    
-    if (error) throw error;
-    
-    testUsers = data.map(dbUser => ({
-      id: dbUser.user_id,
-      name: dbUser.name,
-      stella: dbUser.stella,
-      mothership: {
-        population: dbUser.mothership_population || 0,
-        maxCapacity: 100000
-      }
-    }));
-    
-    console.log('読み込んだユーザー:', testUsers);
-    
-    if (testUsers.length > 0) {
-      console.log('ログイン画面を表示');
-      showLoginUI();
-    }
-  } catch (err) {
-    console.error('ユーザー読み込みエラー:', err);
-    // エラーの場合はデモ用ユーザーを使用
-    console.log('デモユーザーでフォールバック');
-    testUsers = [
-      {
-        id: '550e8400-e29b-41d4-a716-446655440001',
-        name: 'toshipur1916',
-        stella: 500,
-        mothership: { population: 10000, maxCapacity: 100000 }
-      }
-    ];
-    showLoginUI();
-  }
-}
-
-function showLoginUI() {
-  const userList = document.getElementById('user-list');
-  userList.innerHTML = '';
-  
-  testUsers.forEach((u, idx) => {
-    const btn = document.createElement('button');
-    btn.style.cssText = 'padding: 14px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 12px; color: #88ccff; cursor: pointer; font-size: 14px; letter-spacing: 1px; font-family: "Courier New", monospace; transition: all 0.2s;';
-    btn.onmouseover = () => btn.style.background = 'rgba(100,180,255,0.25)';
-    btn.onmouseout = () => btn.style.background = 'rgba(100,180,255,0.1)';
-    btn.textContent = `👤 ${u.name}`;
-    btn.onclick = () => login(idx);
-    userList.appendChild(btn);
-  });
-}
-
-function login(userIndex) {
-  currentUserIndex = userIndex;
-  user = { ...testUsers[userIndex] };
-  
-  // ログイン画面を非表示
-  document.getElementById('login-screen').style.display = 'none';
-  // アプリケーション画面を表示
-  document.getElementById('app').style.display = 'block';
-  
-  // ゲーム初期化
-  initializeMap();
-  updateUserStatus();
-}
-
-function logout() {
-  // アプリケーション画面を非表示
-  document.getElementById('app').style.display = 'none';
-  // ログイン画面を表示
-  document.getElementById('login-screen').style.display = 'flex';
-}
-
-async function loadPlanetsFromDB() {
-  try {
-    const { data, error } = await supabaseClient
-      .from('planets')
-      .select('*');
-    
-    
-    if (error) {
-      return;
-    }
-    
-    
-    // DB から読み込んだ惑星をメモリに変換
-    const dbPlanets = data.map(row => ({
-      id: row.planet_id,
-      gridX: row.grid_x,
-      gridY: row.grid_y,
-      name: row.name,
-      size: row.size,
-      color: row.color,
-      population: row.population,
-      civType: row.civ_type,
-      description: row.description,
-      tags: row.tags || [],
-      brightness: row.brightness || 1,
-      barren: row.civ_type === 3,
-      owner_id: row.owner_id,
-      desc: row.description  // 互換性のため
-    }));
-    
-    
-    // ブラックホールを除いた惑星をセット
-    planets = [
-      {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
-      ...dbPlanets
-    ];
-    
-    
-    // チャンク構造に追加
-    dbPlanets.forEach(p => addToChunk(p));
-    
-  } catch (err) {
-  }
-}
-
-async function savePlanetToDB(planet) {
-  try {
-    const { error } = await supabaseClient
-      .from('planets')
-      .insert([{
-        planet_id: planet.id,
-        grid_x: planet.gridX,
-        grid_y: planet.gridY,
-        name: planet.name,
-        size: planet.size,
-        color: planet.color,
-        owner_id: planet.owner_id,
-        population: planet.population,
-        civ_type: planet.civType || 1,
-        description: planet.description || planet.desc,
-        tags: planet.tags,
-        brightness: planet.brightness || 1
-      }]);
-    
-    if (error) {
-      return false;
-    }
-    
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
-async function updatePlanetInDB(planetId, updates) {
-  try {
-    const { error } = await supabaseClient
-      .from('planets')
-      .update(updates)
-      .eq('planet_id', planetId);
-    
-    if (error) {
-      return false;
-    }
-    
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
 
 // ブラックホール描画
 let bhCanvas = null;
@@ -1201,13 +923,14 @@ async function initializeMap() {
   offX = window.innerWidth / 2;
   offY = window.innerHeight / 2;
   
-  // DB から既存の惑星を読み込み
-  await loadPlanetsFromDB();
-  
-  // Canvas 初期化
-  initBlackhole();
-  drawStars();
-  render();
+  // DBから既存の惑星を読み込み
+  const dbPlanets = await loadPlanetsFromDB();
+  if (dbPlanets.length > 0) {
+    planets = dbPlanets;
+    // チャンク構造も再構築
+    planets.forEach(p => addToChunk(p));
+    console.log(`✅ 起動時に ${planets.length} 個の惑星を読み込みました`);
+  }
 }
 let dragging = false, dragX = 0, dragY = 0, wasDragging = false;
 let placingMode = false;
@@ -1355,6 +1078,7 @@ function canPlace(gridX, gridY, newSize) {
   const bhForbiddenDist = BLACKHOLE_FORBIDDEN_DISTANCE * 10 + (SIZE_OCCUPANCY[newSize] / 2) * 1.5 * 10;
   
   if (distToBlackhole <= bhForbiddenDist) {
+    console.log(`❌ ブラックホール禁止エリアと重なる: dist=${distToBlackhole.toFixed(1)}, minDist=${bhForbiddenDist.toFixed(1)}`);
     return false;
   }
   
@@ -1373,10 +1097,12 @@ function canPlace(gridX, gridY, newSize) {
     const minDist = newGravityRadius + pGravityRadius;
     
     if (dist <= minDist) {
+      console.log(`❌ ${p.name}との重力エリアが重なる: dist=${dist.toFixed(1)}, minDist=${minDist.toFixed(1)}`);
       return false;
     }
   }
   
+  console.log(`✅ 配置可能`);
   return true;
 }
 
@@ -1685,6 +1411,7 @@ function deleteContent(planetId, index) {
   contents.splice(index, 1);
   localStorage.setItem(`contents_${planetId}`, JSON.stringify(contents));
   
+  console.log('✅ コンテンツを削除しました');
   displayContentPage(planetId);
 }
 
@@ -1730,6 +1457,7 @@ function submitEditContent() {
   };
   
   localStorage.setItem(`contents_${editingPlanetId}`, JSON.stringify(contents));
+  console.log('✅ コンテンツを編集しました');
   closeEditModal();
   displayContentPage(editingPlanetId);
 }
@@ -1791,9 +1519,11 @@ function shinePlanet() {
     // フォロー解除
     const idx = myFollows.indexOf(p.id);
     myFollows.splice(idx, 1);
+    console.log('✅ この星への応援を解除しました');
   } else {
     // フォロー
     myFollows.push(p.id);
+    console.log('✅ この星に輝きを与えました！');
   }
   
   localStorage.setItem('myFollows', JSON.stringify(myFollows));
@@ -1863,6 +1593,7 @@ function submitAddContent() {
   contents.push(newContent);
   localStorage.setItem(`contents_${planetId}`, JSON.stringify(contents));
   
+  console.log('✅ コンテンツを追加しました:', title);
   closeAddContentModal();
   displayContentPage(planetId);
 }
@@ -1899,10 +1630,6 @@ function openPlanet(idx) {
     
     // 輝きボタンの状態を更新
     updateShineButton();
-    
-    // 侵略ボタンの状態を更新（常に表示、クリック時に条件チェック）
-    const invadeBtn = document.getElementById('invade-btn');
-    invadeBtn.style.display = 'block';
   });
 }
 
@@ -2006,7 +1733,7 @@ function updateZoomDisplay() {
 
 app.addEventListener('mousedown', e => {
   const modalOpen = document.getElementById('modal-bg').classList.contains('active');
-  if (curIdx !== -1 || modalOpen) return;  // placingMode は除外
+  if (curIdx !== -1 || modalOpen || placingMode) return;
   dragging = true;
   wasDragging = false;
   dragX = e.clientX - offX;
@@ -2020,17 +1747,8 @@ app.addEventListener('mousemove', e => {
   const gridY = Math.round((e.clientY / zoom - offY) / GRID_SCALE);
   document.getElementById('cursor-coords').textContent = `X${gridX} Y${gridY}`;
   
-  if (dragging && !wasDragging) {
-    // 5ピクセル以上動いたらドラッグと判定
-    const dx = e.clientX - (dragX + offX);
-    const dy = e.clientY - (dragY + offY);
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > 5) {
-      wasDragging = true;
-    }
-  }
-  
-  if (dragging && wasDragging) {
+  if (dragging) {
+    wasDragging = true;
     offX = e.clientX - dragX;
     offY = e.clientY - dragY;
     render();
@@ -2075,20 +1793,7 @@ app.addEventListener('touchmove', e => {
 }, { passive: true });
 
 app.addEventListener('touchend', e => {
-  // ボタンやモーダル内のクリックは無視
-  if (e.target.closest('#place-actions') || e.target.closest('#modal')) {
-    dragging = false;
-    wasDragging = false;
-    return;
-  }
-  
   dragging = false;
-  
-  // スライドではなくタップだった場合のみ onMapTouch を呼ぶ
-  if (placingMode && !wasDragging) {
-    onMapTouch(e);
-  }
-  
   wasDragging = false;
 }, { passive: true });
 
@@ -2166,16 +1871,6 @@ function updateFixedPreview(gridX, gridY) {
     preview.style.width = sz + 'px';
     preview.style.height = sz + 'px';
   }
-  
-  // 背景とグロウを再設定（enterPlaceMode と同じ）
-  const color = form._color;
-  const isBarren = form.civType === 'barren';
-  preview.style.background = isBarren
-    ? `radial-gradient(circle at 35% 35%, ${color}77, ${color}22)`
-    : `radial-gradient(circle at 30% 30%, ${lighten(color)}, ${color} 60%, ${color}bb)`;
-  preview.style.boxShadow = isBarren
-    ? `0 0 8px 2px ${color}33`
-    : `0 0 18px 5px ${color}66`;
   
   // 「ここに作る」ボタンを強調表示
   const confirmBtn = document.getElementById('place-confirm');
@@ -2279,12 +1974,6 @@ function enterPlaceMode() {
   document.getElementById('modal-bg').classList.remove('active');
   document.getElementById('place-mode-ui').classList.add('active');
   document.getElementById('create-btn').style.display = 'none';
-  // 宇宙手帳を閉じる
-  const handbook = document.getElementById('handbook-panel');
-  handbook.style.transform = 'translateX(100%)';
-  handbook.style.pointerEvents = 'none';  // ← クリック無効
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
   app.classList.add('placing');
   placingMode = true;
   placeSelectedGridX = null;
@@ -2313,18 +2002,10 @@ function enterPlaceMode() {
 
 function cancelPlaceMode() {
   placingMode = false;
-  dragging = false;
-  wasDragging = false;
   app.classList.remove('placing');
-  app.classList.remove('grabbing');
   document.getElementById('place-mode-ui').classList.remove('active');
   document.getElementById('place-preview').style.display = 'none';
   document.getElementById('create-btn').style.display = '';
-  const handbook = document.getElementById('handbook-panel');
-  handbook.style.transform = 'translateX(0)';
-  handbook.style.pointerEvents = 'auto';  // ← クリック有効に戻す
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
   document.getElementById('modal-bg').classList.add('active');
   currentStep = 2;
   document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -2333,7 +2014,9 @@ function cancelPlaceMode() {
 }
 
 function confirmPlace() {
+  console.log(`confirmPlace: gridX=${placeSelectedGridX}, gridY=${placeSelectedGridY}, size=${form.size}`);
   const canPlaceResult = canPlace(placeSelectedGridX, placeSelectedGridY, form.size);
+  console.log(`canPlace result: ${canPlaceResult}`);
   
   if (!canPlaceResult) {
     showToast('ここに惑星は置けません（重力エリアが重なっています）');
@@ -2342,18 +2025,10 @@ function confirmPlace() {
   
   // 場所が確定されたので、配置モードを終了
   placingMode = false;
-  dragging = false;
-  wasDragging = false;
   app.classList.remove('placing');
-  app.classList.remove('grabbing');
   document.getElementById('place-mode-ui').classList.remove('active');
   document.getElementById('place-preview').style.display = 'none';
   document.getElementById('create-btn').style.display = '';
-  const handbook = document.getElementById('handbook-panel');
-  handbook.style.transform = 'translateX(0)';
-  handbook.style.pointerEvents = 'auto';  // ← クリック有効に戻す
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
   
   form._placedGridX = placeSelectedGridX;
   form._placedGridY = placeSelectedGridY;
@@ -2390,9 +2065,74 @@ function buildConfirm() {
   document.getElementById('confirm-dust').textContent = sd.stella.toLocaleString();
 }
 
-// ===== 惑星作成機能 =====
+// ===== Supabase DB操作関数 =====
 
-async function createPlanet() {
+async function savePlanetToDB(planet) {
+  try {
+    const { data, error } = await supabaseClient
+      .from('planets')
+      .insert([{
+        planet_id: planet.id,
+        grid_x: planet.gridX,
+        grid_y: planet.gridY,
+        name: planet.name,
+        size: planet.size,
+        color: planet.color,
+        description: planet.desc,
+        tags: planet.tags,
+        barren: planet.barren,
+        population: planet.pop,
+        created_at: new Date().toISOString()
+      }])
+      .select();
+    
+    if (error) {
+      console.error('❌ DB保存エラー:', error);
+      return false;
+    }
+    console.log('✅ 惑星をDB保存しました:', planet.id);
+    return true;
+  } catch (err) {
+    console.error('❌ DB操作エラー:', err);
+    return false;
+  }
+}
+
+async function loadPlanetsFromDB() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('planets')
+      .select('*');
+    
+    if (error) {
+      console.error('❌ DB読み込みエラー:', error);
+      return [];
+    }
+    
+    // DBのデータを planets配列に変換
+    const loadedPlanets = data.map(row => ({
+      id: row.planet_id,
+      name: row.name,
+      size: row.size,
+      color: row.color,
+      gridX: row.grid_x,
+      gridY: row.grid_y,
+      desc: row.description,
+      tags: row.tags || [],
+      barren: row.barren,
+      pop: row.population,
+      population: row.population  // 互換性のため両方つける
+    }));
+    
+    console.log(`✅ DB から ${loadedPlanets.length} 個の惑星を読み込みました`);
+    return loadedPlanets;
+  } catch (err) {
+    console.error('❌ DB操作エラー:', err);
+    return [];
+  }
+}
+
+function createPlanet() {
   const sd = SIZE_DATA[form.size];
   const color = form._color;
   const isBarren = form.civType === 'barren';
@@ -2404,11 +2144,6 @@ async function createPlanet() {
     defaultDesc = 'フレーバーテキストが刻まれている...';
   }
   
-  // civ_type を数値に変換（1=文明あり, 2=滅びゆく, 3=文明なし）
-  let civTypeNum = 1;
-  if (form.civType === 'declining') civTypeNum = 2;
-  else if (form.civType === 'barren') civTypeNum = 3;
-  
   const newPlanet = {
     id: gridToID(form._placedGridX, form._placedGridY),
     name: form.name,
@@ -2416,26 +2151,19 @@ async function createPlanet() {
     color: color,
     gridX: form._placedGridX,
     gridY: form._placedGridY,
-    description: form.desc || defaultDesc,
-    desc: form.desc || defaultDesc,  // 互換性
+    desc: form.desc || defaultDesc,
     tags: [...form.tags],
     population: isBarren ? 0 : 100,
     barren: isBarren,
-    civType: civTypeNum,  // DB用：1,2,3
-    owner_id: user.id,
-    brightness: 1  // 初期輝度
+    civType: form.civType,  // 文明タイプを保存
+    pop: isBarren ? 0 : 100  // 互換性のため両方つける
   };
   
   planets.push(newPlanet);
   addToChunk(newPlanet);
   
-  // DB に保存（待つ）
-  const saved = await savePlanetToDB(newPlanet);
-  if (!saved) {
-    alert('惑星のDB保存に失敗しました');
-    planets.pop();
-    return;
-  }
+  // DB に非同期で保存（完成演出は待たない）
+  savePlanetToDB(newPlanet).catch(err => console.error('DB保存失敗:', err));
   
   // 完成演出
   document.querySelectorAll('.step').forEach(s => s.style.display = 'none');
@@ -2459,9 +2187,6 @@ async function createPlanet() {
 }
 
 function openCreateModal() {
-  // 宇宙手帳パネルを閉じる
-  document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
-  
   form = {civType: null, size: null, tags: [], name: '', desc: '', _color: '#4a9edd', _placedGridX: null, _placedGridY: null};
   currentStep = 1;
   document.querySelectorAll('.step').forEach(s => { s.classList.remove('active'); s.style.display = ''; });
@@ -2518,9 +2243,14 @@ window.addEventListener('resize', () => {
 
 drawStars();
 
-// 初期化：DB からユーザーを読み込んでログイン画面を表示
+// 非同期で初期化（DB読み込み）
 (async () => {
-  await loadUsersFromDB();
+  await initializeMap();  // (0,0) を中央に配置 + DB から惑星を読み込み
+  initBlackhole();
+  render();
+  drawForbiddenAreas();
+  animateBlackhole();
+  addToChunk(planets[0]);
 })();
 
 // ブラックホールアニメーションループ
@@ -2531,148 +2261,53 @@ function animateBlackhole() {
 
 // ===== 宇宙手帳機能 =====
 
-function scrollHandbookUp() {
-  const list = document.getElementById('handbook-list');
-  list.scrollBy({ top: -100, behavior: 'smooth' });
-}
-
-function scrollHandbookDown() {
-  const list = document.getElementById('handbook-list');
-  list.scrollBy({ top: 100, behavior: 'smooth' });
-}
-
 function updateHandbookList() {
   const list = document.getElementById('handbook-list');
   list.innerHTML = '';
   
-  // ユーザーの所有惑星のみ表示
-  // すべての惑星を表示（ブラックホール以外）
-  const ownedPlanets = planets.filter(p => !p.isBlackhole);
-  
-  ownedPlanets.forEach((p, idx) => {
+  // ブラックホール以外の惑星を表示
+  planets.forEach((p, idx) => {
+    if (p.isBlackhole) return;
+    
     const item = document.createElement('div');
     item.style.cssText = `
       padding: 12px;
       border-radius: 10px;
       border: 1px solid rgba(100,180,255,0.3);
       background: rgba(100,180,255,0.06);
+      cursor: pointer;
       transition: all 0.2s;
-      cursor: default;
+      color: rgba(255,255,255,0.8);
+      font-size: 12px;
+      letter-spacing: 1px;
     `;
+    item.textContent = p.name;
     
-    // 惑星情報コンテナ
-    const infoDiv = document.createElement('div');
-    infoDiv.style.cssText = 'cursor: pointer; transition: all 0.2s;';
-    
-    // 惑星名
-    const nameDiv = document.createElement('div');
-    nameDiv.style.cssText = 'color: rgba(255,255,255,0.8); font-size: 12px; letter-spacing: 1px; margin-bottom: 6px;';
-    nameDiv.textContent = p.name;
-    
-    // 人口情報
-    const popDiv = document.createElement('div');
-    popDiv.style.cssText = 'color: rgba(255,255,255,0.5); font-size: 10px; margin-bottom: 8px;';
-    popDiv.textContent = `👥 人口: ${p.population.toLocaleString()} / 10,000`;
-    
-    // 輝度情報
-    const brightDiv = document.createElement('div');
-    brightDiv.style.cssText = 'color: rgba(255,255,255,0.5); font-size: 10px; margin-bottom: 10px;';
-    const brightLevel = Math.floor(p.brightness || 0);
-    const stars = '★'.repeat(brightLevel) + '☆'.repeat(5 - brightLevel);
-    brightDiv.textContent = `✨ 輝度: ${stars}`;
-    
-    infoDiv.appendChild(nameDiv);
-    infoDiv.appendChild(popDiv);
-    infoDiv.appendChild(brightDiv);
-    
-    // マウスホバー効果
-    infoDiv.addEventListener('mouseenter', () => {
+    item.addEventListener('mouseenter', () => {
       item.style.background = 'rgba(100,180,255,0.15)';
       item.style.borderColor = 'rgba(100,180,255,0.6)';
     });
-    infoDiv.addEventListener('mouseleave', () => {
+    item.addEventListener('mouseleave', () => {
       item.style.background = 'rgba(100,180,255,0.06)';
       item.style.borderColor = 'rgba(100,180,255,0.3)';
     });
     
-    // 惑星をクリックで移動
-    infoDiv.addEventListener('click', () => zoomToPlanet(p));
-    
-    // ボタンコンテナ
-    const btnDiv = document.createElement('div');
-    btnDiv.style.cssText = 'display: flex; gap: 6px; font-size: 10px;';
-    
-    // 自分の惑星か他の惑星か判定
-    const isOwned = p.owner === user.name;
-    
-    if (isOwned) {
-      // 自分の惑星：「送る」ボタン
-      const sendBtn = document.createElement('button');
-      sendBtn.style.cssText = `
-        flex: 1;
-        padding: 6px 8px;
-        background: rgba(100,180,255,0.1);
-        border: 1px solid rgba(100,180,255,0.4);
-        color: #88ccff;
-        border-radius: 6px;
-        cursor: pointer;
-        font-family: 'Courier New', monospace;
-        transition: all 0.2s;
-        font-size: 10px;
-      `;
-      sendBtn.textContent = '⬆️ 送る';
-      sendBtn.addEventListener('mouseenter', () => {
-        sendBtn.style.background = 'rgba(100,180,255,0.25)';
-      });
-      sendBtn.addEventListener('mouseleave', () => {
-        sendBtn.style.background = 'rgba(100,180,255,0.1)';
-      });
-      sendBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openSendDialog(p);
-      });
-      btnDiv.appendChild(sendBtn);
-    } else {
-      // 他の惑星：「侵略可能」表示
-      const statusBtn = document.createElement('div');
-      statusBtn.style.cssText = `
-        flex: 1;
-        padding: 6px 8px;
-        background: rgba(255,60,60,0.08);
-        border: 1px solid rgba(255,60,60,0.3);
-        color: #ff8888;
-        border-radius: 6px;
-        font-family: 'Courier New', monospace;
-        font-size: 10px;
-        text-align: center;
-      `;
-      statusBtn.textContent = '⚔️ 侵略可能';
-      btnDiv.appendChild(statusBtn);
-    }
-    
-    item.appendChild(infoDiv);
-    item.appendChild(btnDiv);
+    item.addEventListener('click', () => zoomToPlanet(p));
     list.appendChild(item);
   });
   
   // 惑星がない場合
-  if (ownedPlanets.length === 0) {
+  if (planets.length <= 1) {
     const empty = document.createElement('div');
     empty.style.cssText = 'color: rgba(255,255,255,0.3); font-size: 11px; text-align: center; padding: 20px 0;';
     empty.textContent = '探索した惑星がまだありません';
     list.appendChild(empty);
   }
-  
-  // ステータスを更新
-  updateUserStatus();
 }
 
 function zoomToPlanet(planet) {
   const W = window.innerWidth, H = window.innerHeight;
   const targetZoom = 2;
-  
-  // まずパネルを閉じる
-  document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
   
   // アニメーション変数
   let progress = 0;
@@ -2707,11 +2342,8 @@ function zoomToPlanet(planet) {
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      // ズーム完了後、惑星ビューを開く
-      const idx = planets.findIndex(p => p.gridX === planet.gridX && p.gridY === planet.gridY);
-      if (idx !== -1) {
-        openPlanet(idx);
-      }
+      // パネルを閉じる
+      document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
     }
   }
   
@@ -2725,16 +2357,12 @@ document.getElementById('handbook-btn').addEventListener('click', () => {
     panel.style.transform = 'translateX(100%)';
   } else {
     panel.style.transform = 'translateX(0px)';
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
     updateHandbookList();
   }
 });
 
 document.getElementById('handbook-close').addEventListener('click', () => {
   document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
 });
 
 // 惑星作成後にハンドブックを更新
@@ -2744,219 +2372,7 @@ createPlanet = function() {
   updateHandbookList();
 };
 
-
-// ===== 母船システム =====
-
-// ユーザーステータスを更新
-function switchUser() {
-  currentUserIndex = (currentUserIndex + 1) % testUsers.length;
-  user = { ...testUsers[currentUserIndex] };
-  updateUserStatus();
-}
-
-function updateUserStatus() {
-  document.getElementById('user-name').textContent = `👤 ${user.name}`;
-  document.getElementById('user-stella').textContent = user.stella.toLocaleString();
-  document.getElementById('user-mothership').textContent = user.mothership.population.toLocaleString();
-}
-
-// 母船送信ダイアログを開く
-let currentSendPlanet = null;
-
-function openSendDialog(planet) {
-  currentSendPlanet = planet;
-  document.getElementById('send-dialog-title').textContent = planet.name;
-  document.getElementById('send-dialog-available').textContent = planet.population.toLocaleString();
-  document.getElementById('send-dialog-input').value = '';
-  document.getElementById('send-dialog-input').max = planet.population;
-  document.getElementById('send-dialog-percentage').textContent = '0%';
-  document.getElementById('send-dialog-bg').style.display = 'flex';
-  document.getElementById('send-dialog-input').focus();
-  
-  // リアルタイム入力監視
-  document.getElementById('send-dialog-input').addEventListener('input', updateSendPercentage);
-}
-
-function closeSendDialog() {
-  document.getElementById('send-dialog-bg').style.display = 'none';
-  document.getElementById('send-dialog-input').removeEventListener('input', updateSendPercentage);
-  currentSendPlanet = null;
-}
-
-function updateSendPercentage() {
-  const input = document.getElementById('send-dialog-input');
-  const available = currentSendPlanet.population;
-  const value = parseInt(input.value) || 0;
-  const percentage = available > 0 ? Math.round((value / available) * 100) : 0;
-  document.getElementById('send-dialog-percentage').textContent = percentage + '%';
-}
-
-function confirmSend() {
-  if (!currentSendPlanet) return;
-  
-  const input = document.getElementById('send-dialog-input');
-  const sendAmount = parseInt(input.value) || 0;
-  
-  if (sendAmount <= 0) {
-    alert('0より大きい数を入力してください');
-    return;
-  }
-  
-  if (sendAmount > currentSendPlanet.population) {
-    alert('利用可能な人口を超えています');
-    return;
-  }
-  
-  // 人口を送信
-  currentSendPlanet.population -= sendAmount;
-  user.mothership.population += sendAmount;
-  
-  // UI更新
-  updateHandbookList();
-  closeSendDialog();
-  
-  // 成功メッセージ
-  alert(`${currentSendPlanet.name}から母船へ${sendAmount.toLocaleString()}人を送信しました！\n現在の母船人口: ${user.mothership.population.toLocaleString()}`);
-}
-
-// ===== 侵略システム =====
-
-let currentInvadePlanet = null;
-
-function openInvadeDialog() {
-  if (curIdx === -1) return;
-  const planet = planets[curIdx];
-  
-  // 条件チェック
-  if (planet.barren) {
-    alert('文明のない惑星は侵略できません');
-    return;
-  }
-  
-  if (planet.owner === user.name) {
-    alert('自分の惑星は侵略できません');
-    return;
-  }
-  
-  if (user.mothership.population <= 0) {
-    alert('母船に人口がありません');
-    return;
-  }
-  
-  currentInvadePlanet = planet;
-  document.getElementById('invade-dialog-title').textContent = planet.name + 'に侵略';
-  document.getElementById('invade-mothership-power').textContent = user.mothership.population.toLocaleString();
-  document.getElementById('invade-enemy-defense').textContent = planet.population.toLocaleString();
-  document.getElementById('invade-dialog-input').value = '';
-  document.getElementById('invade-dialog-input').max = user.mothership.population;
-  document.getElementById('invade-dialog-input').addEventListener('input', updateInvadePrediction);
-  document.getElementById('invade-dialog-bg').style.display = 'flex';
-  document.getElementById('invade-dialog-input').focus();
-}
-
-function closeInvadeDialog() {
-  document.getElementById('invade-dialog-bg').style.display = 'none';
-  document.getElementById('invade-dialog-input').removeEventListener('input', updateInvadePrediction);
-  currentInvadePlanet = null;
-}
-
-function updateInvadePrediction() {
-  if (!currentInvadePlanet) return;
-  
-  const input = document.getElementById('invade-dialog-input');
-  const invadeForce = parseInt(input.value) || 0;
-  const defenseForce = currentInvadePlanet.population;
-  const maxForce = user.mothership.population;
-  
-  // 勝率計算
-  let winRate = 50; // デフォルト50%
-  if (invadeForce > 0) {
-    winRate = Math.min(99, Math.round((invadeForce / (invadeForce + defenseForce)) * 100));
-  }
-  
-  // パワーバー
-  const totalForce = invadeForce + defenseForce;
-  const barWidth = totalForce > 0 ? (invadeForce / totalForce) * 100 : 0;
-  document.getElementById('invade-power-bar').style.width = barWidth + '%';
-  
-  // 勝率表示と色分け
-  const predictionEl = document.getElementById('invade-prediction');
-  if (winRate > 75) {
-    predictionEl.style.color = '#66ff66';
-    predictionEl.textContent = `勝率: ${winRate}% 🟢 圧倒的勝利`;
-  } else if (winRate > 60) {
-    predictionEl.style.color = '#ffff66';
-    predictionEl.textContent = `勝率: ${winRate}% 🟡 有利`;
-  } else if (winRate > 40) {
-    predictionEl.style.color = '#ffaa66';
-    predictionEl.textContent = `勝率: ${winRate}% 🟠 互角`;
-  } else {
-    predictionEl.style.color = '#ff6666';
-    predictionEl.textContent = `勝率: ${winRate}% 🔴 不利`;
-  }
-  
-  // 割合表示
-  const percentage = maxForce > 0 ? Math.round((invadeForce / maxForce) * 100) : 0;
-  document.getElementById('invade-dialog-percentage').textContent = percentage + '%';
-}
-
-async function confirmInvade() {
-  if (!currentInvadePlanet) return;
-  
-  const input = document.getElementById('invade-dialog-input');
-  const invadeForce = parseInt(input.value) || 0;
-  
-  if (invadeForce <= 0) {
-    alert('0より大きい戦力を投入してください');
-    return;
-  }
-  
-  if (invadeForce > user.mothership.population) {
-    alert('母船の戦力を超えています');
-    return;
-  }
-  
-  // 侵略実行
-  const defenseForce = currentInvadePlanet.population;
-  const isSuccess = invadeForce > defenseForce;
-  
-  // 母船から人口を消費
-  user.mothership.population -= invadeForce;
-  
-  if (isSuccess) {
-    // 侵略成功
-    alert(
-      `⚔️ 侵略成功！\n\n` +
-      `${currentInvadePlanet.name}を占領しました！\n` +
-      `投入戦力: ${invadeForce.toLocaleString()} > 防衛: ${defenseForce.toLocaleString()}\n\n` +
-      `現在の母船人口: ${user.mothership.population.toLocaleString()}`
-    );
-    
-    // 惑星の所有者を変更
-    currentInvadePlanet.owner_id = user.id;
-    currentInvadePlanet.population = Math.max(100, invadeForce - defenseForce);
-    
-    // DB に保存
-    await updatePlanetInDB(currentInvadePlanet.id, {
-      owner_id: user.id,
-      population: currentInvadePlanet.population
-    });
-  } else {
-    // 侵略失敗
-    alert(
-      `❌ 侵略失敗...\n\n` +
-      `${currentInvadePlanet.name}の防衛に阻止されました\n` +
-      `投入戦力: ${invadeForce.toLocaleString()} < 防衛: ${defenseForce.toLocaleString()}\n\n` +
-      `現在の母船人口: ${user.mothership.population.toLocaleString()}`
-    );
-  }
-  
-  // UI更新
-  updateUserStatus();
-  updateHandbookList();
-  closeInvadeDialog();
-  backToMap();
-}
+console.log('✅ v4 準備完了（設計ベース実装）');
 </script>
 </body>
 </html>
