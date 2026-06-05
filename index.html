@@ -1000,14 +1000,19 @@ let planets = [
 
 async function loadPlanetsFromDB() {
   try {
+    console.log('🔄 loadPlanetsFromDB 開始');
     const { data, error } = await supabaseClient
       .from('planets')
       .select('*');
+    
+    console.log('📊 Supabase Response:', data?.length, error);
     
     if (error) {
       console.error('Error loading planets:', error);
       return;
     }
+    
+    console.log('✅ data.length:', data.length);
     
     // DB から読み込んだ惑星をメモリに変換
     const dbPlanets = data.map(row => ({
@@ -1027,8 +1032,8 @@ async function loadPlanetsFromDB() {
       desc: row.description  // 互換性のため
     }));
     
-    console.log('dbPlanets.length:', dbPlanets.length);  // デバッグ
-    console.log('dbPlanets[0]:', dbPlanets[0]);  // デバッグ
+    console.log('🌍 dbPlanets.length:', dbPlanets.length);
+    console.log('🌍 dbPlanets[0]:', dbPlanets[0]);
     
     // ブラックホールを除いた惑星をセット
     planets = [
@@ -1036,8 +1041,10 @@ async function loadPlanetsFromDB() {
       ...dbPlanets
     ];
     
-    console.log('planets.length after update:', planets.length);  // デバッグ
-    console.log('planets[1] after update:', planets[1]);  // デバッグ
+    console.log('🔥 planets 上書き後:');
+    console.log('planets.length:', planets.length);
+    console.log('planets[0]:', planets[0]);
+    console.log('planets[1]:', planets[1]);
     console.log(`✅ ${dbPlanets.length}個の惑星を読み込みました`);
   } catch (err) {
     console.error('Failed to load planets:', err);
