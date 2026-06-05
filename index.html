@@ -2257,57 +2257,7 @@ function buildConfirm() {
   document.getElementById('confirm-dust').textContent = sd.stella.toLocaleString();
 }
 
-// ===== Supabase DB操作関数 =====
-
-async function savePlanetToDB(planet) {
-  try {
-    const { data, error } = await supabaseClient
-      .from('planets')
-      .insert([{
-        planet_id: planet.id,
-        grid_x: planet.gridX,
-        grid_y: planet.gridY,
-        name: planet.name,
-        size: planet.size,
-        color: planet.color,
-        description: planet.desc,
-        tags: planet.tags,
-        barren: planet.barren,
-        population: planet.pop,
-        owner: planet.owner,
-        brightness: planet.brightness,
-        created_at: new Date().toISOString()
-      }])
-      .select();
-    
-    if (error) {
-      console.error('❌ DB保存エラー:', error);
-      return false;
-    }
-    console.log('✅ 惑星をDB保存しました:', planet.id);
-    return true;
-  } catch (err) {
-    console.error('❌ DB操作エラー:', err);
-    return false;
-  }
-}
-
-async function loadPlanetsFromDB() {
-  try {
-    const { data, error } = await supabaseClient
-      .from('planets')
-      .select('*');
-    
-    if (error) {
-      console.error('❌ DB読み込みエラー:', error);
-      return [];
-    }
-    
-    // DBのデータを planets配列に変換
-    const loadedPlanets = data.map(row => ({
-      id: row.planet_id,
-      name: row.name,
-      size: row.size,
+// ===== Supabase DB操作関数（上記参照） =====
       color: row.color,
       gridX: row.grid_x,
       gridY: row.grid_y,
