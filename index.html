@@ -2174,6 +2174,8 @@ async function savePlanetToDB(planet) {
         tags: planet.tags,
         barren: planet.barren,
         population: planet.pop,
+        owner: planet.owner,
+        brightness: planet.brightness,
         created_at: new Date().toISOString()
       }])
       .select();
@@ -2365,7 +2367,8 @@ function updateHandbookList() {
   list.innerHTML = '';
   
   // ユーザーの所有惑星のみ表示
-  const ownedPlanets = planets.filter(p => !p.isBlackhole && p.owner === user.name);
+  // すべての惑星を表示（ブラックホール以外）
+  const ownedPlanets = planets.filter(p => !p.isBlackhole);
   
   ownedPlanets.forEach((p, idx) => {
     const item = document.createElement('div');
@@ -2420,33 +2423,53 @@ function updateHandbookList() {
     const btnDiv = document.createElement('div');
     btnDiv.style.cssText = 'display: flex; gap: 6px; font-size: 10px;';
     
-    // 母船に送るボタン
-    const sendBtn = document.createElement('button');
-    sendBtn.style.cssText = `
-      flex: 1;
-      padding: 6px 8px;
-      background: rgba(100,180,255,0.1);
-      border: 1px solid rgba(100,180,255,0.4);
-      color: #88ccff;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: 'Courier New', monospace;
-      transition: all 0.2s;
-      font-size: 10px;
-    `;
-    sendBtn.textContent = '⬆️ 送る';
-    sendBtn.addEventListener('mouseenter', () => {
-      sendBtn.style.background = 'rgba(100,180,255,0.25)';
-    });
-    sendBtn.addEventListener('mouseleave', () => {
-      sendBtn.style.background = 'rgba(100,180,255,0.1)';
-    });
-    sendBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openSendDialog(p);
-    });
+    // 自分の惑星か他の惑星か判定
+    const isOwned = p.owner === user.name;
     
-    btnDiv.appendChild(sendBtn);
+    if (isOwned) {
+      // 自分の惑星：「送る」ボタン
+      const sendBtn = document.createElement('button');
+      sendBtn.style.cssText = `
+        flex: 1;
+        padding: 6px 8px;
+        background: rgba(100,180,255,0.1);
+        border: 1px solid rgba(100,180,255,0.4);
+        color: #88ccff;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: 'Courier New', monospace;
+        transition: all 0.2s;
+        font-size: 10px;
+      `;
+      sendBtn.textContent = '⬆️ 送る';
+      sendBtn.addEventListener('mouseenter', () => {
+        sendBtn.style.background = 'rgba(100,180,255,0.25)';
+      });
+      sendBtn.addEventListener('mouseleave', () => {
+        sendBtn.style.background = 'rgba(100,180,255,0.1)';
+      });
+      sendBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openSendDialog(p);
+      });
+      btnDiv.appendChild(sendBtn);
+    } else {
+      // 他の惑星：「侵略可能」表示
+      const statusBtn = document.createElement('div');
+      statusBtn.style.cssText = `
+        flex: 1;
+        padding: 6px 8px;
+        background: rgba(255,60,60,0.08);
+        border: 1px solid rgba(255,60,60,0.3);
+        color: #ff8888;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 10px;
+        text-align: center;
+      `;
+      statusBtn.textContent = '⚔️ 侵略可能';
+      btnDiv.appendChild(statusBtn);
+    }
     
     item.appendChild(infoDiv);
     item.appendChild(btnDiv);
