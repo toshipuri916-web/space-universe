@@ -859,7 +859,7 @@
     
     
     <!-- ステータスパネル -->
-    <div style="background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+    <div style="background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 12px; padding: 14px; margin-bottom: 16px; cursor: pointer; transition: all 0.2s;" onclick="switchUser()" onmouseover="this.style.background='rgba(100,180,255,0.15)'" onmouseout="this.style.background='rgba(100,180,255,0.08)'">
       <div style="color: #fff; font-size: 13px; letter-spacing: 1px; margin-bottom: 10px;" id="user-name">👤 toshipur1916</div>
       <div style="display: flex; flex-direction: column; gap: 7px; font-size: 11px;">
         <div style="color: rgba(255,255,255,0.6);">
@@ -869,6 +869,7 @@
           🚀 母船人口: <span id="user-mothership" style="color: #88ccff;">0</span>
         </div>
       </div>
+      <div style="color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 8px; text-align: center; letter-spacing: 0.5px;">クリックで切り替え</div>
     </div>
     
     <button id="create-btn" onclick="openCreateModal()" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 12px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s; margin-bottom: 16px;\">🔭 未解の惑星を探索</button>
@@ -988,15 +989,41 @@ const AVAILABLE_TAGS = [
 // ===== グローバル変数 =====
 
 // ユーザーデータ
-const user = {
-  id: '550e8400-e29b-41d4-a716-446655440001',  // toshipur1916
-  name: 'toshipur1916',
-  stella: 500,
-  mothership: {
-    population: 10000,  // テスト用に増加
-    maxCapacity: 100000,
+const testUsers = [
+  {
+    id: '550e8400-e29b-41d4-a716-446655440001',
+    name: 'toshipur1916',
+    stella: 500,
+    mothership: { population: 10000, maxCapacity: 100000 }
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440002',
+    name: 'alice_creator',
+    stella: 1200,
+    mothership: { population: 8500, maxCapacity: 100000 }
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440003',
+    name: 'bob_warrior',
+    stella: 850,
+    mothership: { population: 12000, maxCapacity: 100000 }
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440004',
+    name: 'carol_writer',
+    stella: 2100,
+    mothership: { population: 6000, maxCapacity: 100000 }
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440005',
+    name: 'dave_artist',
+    stella: 650,
+    mothership: { population: 5500, maxCapacity: 100000 }
   }
-};
+];
+
+let currentUserIndex = 0;
+let user = { ...testUsers[0] };
 
 let planets = [
   {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true}
@@ -1006,19 +1033,15 @@ let planets = [
 
 async function loadPlanetsFromDB() {
   try {
-    console.log('🔄 loadPlanetsFromDB 開始');
     const { data, error } = await supabaseClient
       .from('planets')
       .select('*');
     
-    console.log('📊 Supabase Response:', data?.length, error);
     
     if (error) {
-      console.error('Error loading planets:', error);
       return;
     }
     
-    console.log('✅ data.length:', data.length);
     
     // DB から読み込んだ惑星をメモリに変換
     const dbPlanets = data.map(row => ({
@@ -1038,8 +1061,6 @@ async function loadPlanetsFromDB() {
       desc: row.description  // 互換性のため
     }));
     
-    console.log('🌍 dbPlanets.length:', dbPlanets.length);
-    console.log('🌍 dbPlanets[0]:', dbPlanets[0]);
     
     // ブラックホールを除いた惑星をセット
     planets = [
@@ -1047,18 +1068,11 @@ async function loadPlanetsFromDB() {
       ...dbPlanets
     ];
     
-    console.log('🔥 planets 上書き後:');
-    console.log('planets.length:', planets.length);
-    console.log('planets[0]:', planets[0]);
-    console.log('planets[1]:', planets[1]);
     
     // チャンク構造に追加
     dbPlanets.forEach(p => addToChunk(p));
-    console.log('✅ チャンクマップに追加しました');
     
-    console.log(`✅ ${dbPlanets.length}個の惑星を読み込みました`);
   } catch (err) {
-    console.error('Failed to load planets:', err);
   }
 }
 
@@ -1082,14 +1096,11 @@ async function savePlanetToDB(planet) {
       }]);
     
     if (error) {
-      console.error('Error saving planet:', error);
       return false;
     }
     
-    console.log(`✅ 惑星「${planet.name}」を DB に保存しました`);
     return true;
   } catch (err) {
-    console.error('Failed to save planet:', err);
     return false;
   }
 }
@@ -1102,14 +1113,11 @@ async function updatePlanetInDB(planetId, updates) {
       .eq('planet_id', planetId);
     
     if (error) {
-      console.error('Error updating planet:', error);
       return false;
     }
     
-    console.log(`✅ 惑星 ${planetId} を更新しました`);
     return true;
   } catch (err) {
-    console.error('Failed to update planet:', err);
     return false;
   }
 }
@@ -1282,7 +1290,6 @@ function canPlace(gridX, gridY, newSize) {
   const bhForbiddenDist = BLACKHOLE_FORBIDDEN_DISTANCE * 10 + (SIZE_OCCUPANCY[newSize] / 2) * 1.5 * 10;
   
   if (distToBlackhole <= bhForbiddenDist) {
-    console.log(`❌ ブラックホール禁止エリアと重なる: dist=${distToBlackhole.toFixed(1)}, minDist=${bhForbiddenDist.toFixed(1)}`);
     return false;
   }
   
@@ -1301,12 +1308,10 @@ function canPlace(gridX, gridY, newSize) {
     const minDist = newGravityRadius + pGravityRadius;
     
     if (dist <= minDist) {
-      console.log(`❌ ${p.name}との重力エリアが重なる: dist=${dist.toFixed(1)}, minDist=${minDist.toFixed(1)}`);
       return false;
     }
   }
   
-  console.log(`✅ 配置可能`);
   return true;
 }
 
@@ -1615,7 +1620,6 @@ function deleteContent(planetId, index) {
   contents.splice(index, 1);
   localStorage.setItem(`contents_${planetId}`, JSON.stringify(contents));
   
-  console.log('✅ コンテンツを削除しました');
   displayContentPage(planetId);
 }
 
@@ -1661,7 +1665,6 @@ function submitEditContent() {
   };
   
   localStorage.setItem(`contents_${editingPlanetId}`, JSON.stringify(contents));
-  console.log('✅ コンテンツを編集しました');
   closeEditModal();
   displayContentPage(editingPlanetId);
 }
@@ -1723,11 +1726,9 @@ function shinePlanet() {
     // フォロー解除
     const idx = myFollows.indexOf(p.id);
     myFollows.splice(idx, 1);
-    console.log('✅ この星への応援を解除しました');
   } else {
     // フォロー
     myFollows.push(p.id);
-    console.log('✅ この星に輝きを与えました！');
   }
   
   localStorage.setItem('myFollows', JSON.stringify(myFollows));
@@ -1797,7 +1798,6 @@ function submitAddContent() {
   contents.push(newContent);
   localStorage.setItem(`contents_${planetId}`, JSON.stringify(contents));
   
-  console.log('✅ コンテンツを追加しました:', title);
   closeAddContentModal();
   displayContentPage(planetId);
 }
@@ -2268,9 +2268,7 @@ function cancelPlaceMode() {
 }
 
 function confirmPlace() {
-  console.log(`confirmPlace: gridX=${placeSelectedGridX}, gridY=${placeSelectedGridY}, size=${form.size}`);
   const canPlaceResult = canPlace(placeSelectedGridX, placeSelectedGridY, form.size);
-  console.log(`canPlace result: ${canPlaceResult}`);
   
   if (!canPlaceResult) {
     showToast('ここに惑星は置けません（重力エリアが重なっています）');
@@ -2686,11 +2684,16 @@ createPlanet = function() {
   updateHandbookList();
 };
 
-console.log('✅ v4 準備完了（設計ベース実装）');
 
 // ===== 母船システム =====
 
 // ユーザーステータスを更新
+function switchUser() {
+  currentUserIndex = (currentUserIndex + 1) % testUsers.length;
+  user = { ...testUsers[currentUserIndex] };
+  updateUserStatus();
+}
+
 function updateUserStatus() {
   document.getElementById('user-stella').textContent = user.stella.toLocaleString();
   document.getElementById('user-mothership').textContent = user.mothership.population.toLocaleString();
