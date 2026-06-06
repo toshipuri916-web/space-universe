@@ -1179,15 +1179,17 @@ async function loginWithGoogle() {
 
 async function loadPlanetsFromDB() {
   try {
+    console.log('🔄 Loading planets from DB...');
     const { data, error } = await supabaseClient
       .from('planets')
       .select('*');
     
-    
     if (error) {
+      console.error('❌ DB Error:', error);
       return;
     }
     
+    console.log('✅ Loaded from DB:', data.length, 'planets');
     
     // DB から読み込んだ惑星をメモリに変換
     const dbPlanets = data.map(row => ({
@@ -1207,13 +1209,13 @@ async function loadPlanetsFromDB() {
       desc: row.description  // 互換性のため
     }));
     
-    
     // ブラックホールを除いた惑星をセット
     planets = [
       {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
       ...dbPlanets
     ];
     
+    console.log('✅ Total planets in memory:', planets.length);
     
     // チャンク構造に追加
     dbPlanets.forEach(p => addToChunk(p));
@@ -1279,6 +1281,7 @@ let zoom = 1, offX = 0, offY = 0;
 
 // ページロード時に (0,0) が中央に来るように初期化
 async function initializeMap() {
+  console.log('🗺️ Initializing map...');
   offX = window.innerWidth / 2;
   offY = window.innerHeight / 2;
   
@@ -1289,6 +1292,7 @@ async function initializeMap() {
   initBlackhole();
   drawStars();
   render();
+  console.log('✅ Map initialized');
 }
 let dragging = false, dragX = 0, dragY = 0, wasDragging = false;
 let placingMode = false;
@@ -2733,10 +2737,10 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
     // ログイン状態 → ゲーム開始
     await initializeAuthenticatedGame(session);
   } else {
-    // ログアウト状態 → マップは表示したまま、UI をログイン状態に
+    // ログアウト状態 → マップのみ表示
     user = null;
     updateAuthUI(false);
-    // ログイン画面は表示しない（マップを見せる）
+    await initializeMap();  // 未ログイン時もマップを初期化
   }
 });
 
