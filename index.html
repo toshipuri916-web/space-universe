@@ -1032,7 +1032,7 @@
   <!-- 右上：ユーザーコントロール -->
   <div id="user-controls" style="position: absolute; top: 18px; right: 18px; z-index: 50; display: flex; gap: 10px; align-items: center;">
     <!-- ログインボタン（未ログイン時のみ表示） -->
-    <button id="login-btn" onclick="document.getElementById('login-modal').style.display='flex'" 
+    <button id="login-btn" onclick="document.getElementById('login-modal').classList.add('active')" 
       style="padding: 9px 16px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 20px; font-size: 11px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">
       ログイン
     </button>
@@ -1415,26 +1415,7 @@ function showLoginUI() {
   });
 }
 
-function login(userIndex) {
-  currentUserIndex = userIndex;
-  user = { ...testUsers[userIndex] };
-  
-  // ログイン画面を非表示
-  document.getElementById('login-screen').style.display = 'none';
-  // アプリケーション画面を表示
-  document.getElementById('app').style.display = 'block';
-  
-  // ゲーム初期化
-  initializeMap();
-  updateUserStatus();
-}
 
-function logout() {
-  // アプリケーション画面を非表示
-  document.getElementById('app').style.display = 'none';
-  // ログイン画面を表示
-  document.getElementById('login-screen').style.display = 'flex';
-}
 
 // ===== 認証UI制御 =====
 function switchToRegister() {
@@ -2924,7 +2905,7 @@ function openCreateModal() {
   // ログイン確認：ユーザー登録済みか確認
   if (!user) {
     alert('惑星を作成するにはログインが必要です');
-    document.getElementById('login-modal').style.display = 'flex';
+    document.getElementById('login-modal').classList.add('active');
     return;
   }
   
@@ -3015,8 +2996,8 @@ async function initializeAuthenticatedGame(session) {
     updateUserStatus();
   } else {
     // 新規ユーザー → 登録画面を表示
-    document.getElementById('login-modal').style.display = 'none';
-    document.getElementById('register-modal').style.display = 'flex';
+    document.getElementById('login-modal').classList.remove('active');
+    document.getElementById('register-modal').classList.add('active');
     
     // 登録フォームのバリデーション
     document.getElementById('register-name').addEventListener('input', checkRegisterForm);
@@ -3500,7 +3481,7 @@ function openInvadeDialog() {
   // ログイン確認
   if (!user) {
     alert('侵略するにはログインが必要です');
-    document.getElementById('login-modal').style.display = 'flex';
+    document.getElementById('login-modal').classList.add('active');
     return;
   }
   
