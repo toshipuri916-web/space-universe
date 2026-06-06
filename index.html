@@ -2540,6 +2540,13 @@ async function createPlanet() {
 }
 
 function openCreateModal() {
+  // ログイン確認：ユーザー登録済みか確認
+  if (!user) {
+    alert('惑星を作成するにはログインが必要です');
+    document.getElementById('login-modal').style.display = 'flex';
+    return;
+  }
+  
   // 宇宙手帳パネルを閉じる
   document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
   
@@ -3049,6 +3056,13 @@ function confirmSend() {
 let currentInvadePlanet = null;
 
 function openInvadeDialog() {
+  // ログイン確認
+  if (!user) {
+    alert('侵略するにはログインが必要です');
+    document.getElementById('login-modal').style.display = 'flex';
+    return;
+  }
+  
   if (curIdx === -1) return;
   const planet = planets[curIdx];
   
