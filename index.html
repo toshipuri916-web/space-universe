@@ -1180,16 +1180,19 @@ async function loginWithGoogle() {
 async function loadPlanetsFromDB() {
   try {
     console.log('🔄 Loading planets from DB...');
+    showDebug('🔄 Loading from DB...');
     const { data, error } = await supabaseClient
       .from('planets')
       .select('*');
     
     if (error) {
       console.error('❌ DB Error:', error);
+      showDebug('❌ DB Error: ' + error.message);
       return;
     }
     
     console.log('✅ Loaded from DB:', data.length, 'planets');
+    showDebug('✅ Loaded: ' + data.length + ' planets');
     
     // DB から読み込んだ惑星をメモリに変換
     const dbPlanets = data.map(row => ({
@@ -1216,6 +1219,7 @@ async function loadPlanetsFromDB() {
     ];
     
     console.log('✅ Total planets in memory:', planets.length);
+    showDebug('✅ Total: ' + planets.length + ' in memory');
     
     // チャンク構造に追加
     dbPlanets.forEach(p => addToChunk(p));
@@ -1282,6 +1286,7 @@ let zoom = 1, offX = 0, offY = 0;
 // ページロード時に (0,0) が中央に来るように初期化
 async function initializeMap() {
   console.log('🗺️ Initializing map...');
+  showDebug('🗺️ Initializing map...');
   offX = window.innerWidth / 2;
   offY = window.innerHeight / 2;
   
@@ -1293,6 +1298,7 @@ async function initializeMap() {
   drawStars();
   render();
   console.log('✅ Map initialized');
+  showDebug('✅ Map initialized. Planets: ' + planets.length);
 }
 let dragging = false, dragX = 0, dragY = 0, wasDragging = false;
 let placingMode = false;
@@ -3199,6 +3205,27 @@ async function confirmInvade() {
   updateHandbookList();
   closeInvadeDialog();
   backToMap();
+}
+
+// ===== デバッグ表示（スマホ用） =====
+let debugMessages = [];
+const MAX_DEBUG_LINES = 5;
+
+function showDebug(msg) {
+  debugMessages.push(msg);
+  if (debugMessages.length > MAX_DEBUG_LINES) {
+    debugMessages.shift();
+  }
+  
+  let debugDiv = document.getElementById('debug-log');
+  if (!debugDiv) {
+    debugDiv = document.createElement('div');
+    debugDiv.id = 'debug-log';
+    debugDiv.style.cssText = 'position: fixed; top: 80px; right: 18px; z-index: 999; background: rgba(0,0,0,0.8); border: 1px solid rgba(100,180,255,0.4); border-radius: 8px; padding: 12px; max-width: 280px; font-family: monospace; font-size: 11px; color: #88ccff; line-height: 1.6; max-height: 150px; overflow-y: auto;';
+    document.body.appendChild(debugDiv);
+  }
+  
+  debugDiv.innerHTML = debugMessages.map(m => `<div>${m}</div>`).join('');
 }
 </script>
 </body>
