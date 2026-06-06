@@ -1355,6 +1355,19 @@ let planets = [
   {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true}
 ];
 
+// デモ用ダミー惑星（DB にデータがない場合のフォールバック）
+const dummyPlanets = [
+  { id:"P0001", name:"アルカディア星", size:3, color:"#4a9edd", gridX:50, gridY:45, desc:"銀河で最も人気の小説惑星。訪問者が絶えない活気ある星。", tags:["小説","SF"], population:4820, civType:1 },
+  { id:"P0002", name:"イグニス星", size:1, color:"#e07830", gridX:68, gridY:35, desc:"炎の種族が住む熱帯圏の惑星。漫画クリエイターが多い。", tags:["漫画","アクション"], population:920, civType:1 },
+  { id:"P0003", name:"エデン星", size:2, color:"#8855dd", gridX:32, gridY:58, desc:"緑豊かな温暖圏の惑星。ショップと雑貨が充実している。", tags:["ショップ","雑貨"], population:2340, civType:1 },
+  { id:"P0004", name:"ルナ星", size:1, color:"#44ddaa", gridX:63, gridY:68, desc:"月光に照らされた静かな惑星。イラストが美しい。", tags:["イラスト","癒し"], population:1100, civType:1 },
+  { id:"P0005", name:"ソラリス", size:2, color:"#ddcc44", gridX:44, gridY:24, desc:"太陽に最も近い惑星。動画クリエイターが多い活発な星。", tags:["動画","Vlog"], population:1870, civType:1 },
+  { id:"P0006", name:"クリオス", size:1, color:"#6688bb", gridX:20, gridY:40, desc:"文明なし。古代文明の痕跡を発見した。謎の碑文が刻まれている。", tags:[], population:0, civType:3, barren:true },
+  { id:"P0007", name:"ネブラ", size:1, color:"#887799", gridX:80, gridY:55, desc:"文明なし。謎の信号を受信している...大気に微量の酸素反応を検出。", tags:[], population:0, civType:3, barren:true },
+  { id:"P0008", name:"オメガ星", size:1, color:"#cc6655", gridX:57, gridY:18, desc:"熱狂的なファンが集まる惑星。推し活の聖地として知られる。", tags:["推し活","アニメ"], population:680, civType:1 },
+  { id:"P0009", name:"テラノバ", size:2, color:"#55aa66", gridX:24, gridY:72, desc:"新興の農業惑星。食品・グッズのショップが増えている。", tags:["ショップ","食品"], population:1540, civType:1 }
+];
+
 // ===== Supabase DB関数 =====
 
 async function loadUsersFromDB() {
@@ -1544,41 +1557,61 @@ async function loadPlanetsFromDB() {
     
     if (error) {
       console.error('❌ DB Error:', error);
+      // エラーの場合はダミーデータを使用
+      planets = [
+        {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
+        ...dummyPlanets
+      ];
+      console.log('📦 Fallback to dummy planets:', planets.length);
       return;
     }
     
     console.log('✅ Loaded from DB:', data.length, 'planets');
     
-    // DB から読み込んだ惑星をメモリに変換
-    const dbPlanets = data.map(row => ({
-      id: row.planet_id,
-      gridX: row.grid_x,
-      gridY: row.grid_y,
-      name: row.name,
-      size: row.size,
-      color: row.color,
-      population: row.population,
-      civType: row.civ_type,
-      description: row.description,
-      tags: row.tags || [],
-      brightness: row.brightness || 1,
-      barren: row.civ_type === 3,
-      owner_id: row.owner_id,
-      desc: row.description  // 互換性のため
-    }));
-    
-    // ブラックホールを除いた惑星をセット
-    planets = [
-      {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
-      ...dbPlanets
-    ];
-    
-    console.log('✅ Total planets in memory:', planets.length);
-    
-    // チャンク構造に追加
-    dbPlanets.forEach(p => addToChunk(p));
+    // DB からデータがある場合はそれを使用
+    if (data && data.length > 0) {
+      const dbPlanets = data.map(row => ({
+        id: row.planet_id,
+        gridX: row.grid_x,
+        gridY: row.grid_y,
+        name: row.name,
+        size: row.size,
+        color: row.color,
+        population: row.population,
+        civType: row.civ_type,
+        description: row.description,
+        tags: row.tags || [],
+        brightness: row.brightness || 1,
+        barren: row.civ_type === 3,
+        owner_id: row.owner_id,
+        desc: row.description  // 互換性のため
+      }));
+      
+      planets = [
+        {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
+        ...dbPlanets
+      ];
+      
+      console.log('✅ Total planets in memory:', planets.length);
+      
+      // チャンク構造に追加
+      dbPlanets.forEach(p => addToChunk(p));
+    } else {
+      // DB にデータがない場合はダミーデータを使用
+      planets = [
+        {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
+        ...dummyPlanets
+      ];
+      console.log('📦 DB is empty, using dummy planets:', planets.length);
+    }
     
   } catch (err) {
+    console.error('❌ Error loading planets:', err);
+    // エラーの場合もダミーデータにフォールバック
+    planets = [
+      {id:'BLACKHOLE-0000', name:'ブラックホール', size:0, color:'#000000', gridX:0, gridY:0, desc:'宇宙の中心', tags:[], population:0, barren:true, isBlackhole:true},
+      ...dummyPlanets
+    ];
   }
 }
 
