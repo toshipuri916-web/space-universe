@@ -819,113 +819,93 @@
 </head>
 <body>
 <!-- ===== ログイン画面 ===== -->
-<!-- ログインモーダル -->
-<div id="login-modal" class="auth-modal">
-  <div class="auth-container">
-    <div class="auth-title">🌌 宇宙創造プラットフォーム</div>
-    <div class="auth-subtitle">ログイン</div>
+<div id="login-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;">
+  <div style="text-align: center; max-width: 350px;">
+    <div style="color: #fff; font-size: 32px; letter-spacing: 3px; margin-bottom: 10px;">🌌</div>
+    <div style="color: #fff; font-size: 20px; letter-spacing: 2px; margin-bottom: 40px;">宇宙創造プラットフォーム</div>
     
-    <div class="auth-error" id="login-error"></div>
+    <div style="color: rgba(255,255,255,0.5); font-size: 12px; letter-spacing: 1px; margin-bottom: 20px;">ログイン</div>
     
-    <div class="oauth-buttons">
-      <button class="oauth-btn" onclick="loginWithGoogle()">
-        <span class="oauth-icon">🔐</span>
-        Google でログイン
-      </button>
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">メールアドレス</label>
+      <input type="email" id="login-email" placeholder="your@email.com" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
     </div>
     
-    <div class="auth-divider"><span>または</span></div>
-    
-    <form onsubmit="handleLogin(event)">
-      <div class="auth-form-group">
-        <label class="auth-label">メールアドレス</label>
-        <input type="email" id="login-email" class="auth-input" placeholder="your@email.com" required>
-      </div>
-      
-      <div class="auth-form-group">
-        <label class="auth-label">パスワード</label>
-        <input type="password" id="login-password" class="auth-input" placeholder="••••••••" required>
-      </div>
-      
-      <button type="submit" class="auth-btn-primary" style="width: 100%; margin-bottom: 12px;">
-        ログイン
-      </button>
-    </form>
-    
-    <div style="text-align: center; font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 12px;">
-      アカウントをお持ちでない場合
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">パスワード</label>
+      <input type="password" id="login-password" placeholder="••••••••" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
     </div>
     
-    <button type="button" class="auth-btn-secondary" onclick="switchToRegister()" style="width: 100%;">
-      🚀 ユーザー登録
-    </button>
+    <button onclick="handleLogin()" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.25); border: 1px solid rgba(100,180,255,0.5); border-radius: 8px; color: #88ccff; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s; margin-bottom: 12px;">ログイン</button>
+    
+    <div style="color: rgba(255,255,255,0.3); font-size: 10px; margin-bottom: 12px;">または</div>
+    
+    <button onclick="loginWithGoogle()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: #fff; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">🔐 Google でログイン</button>
+    
+    <div id="login-error" style="margin-top: 16px; color: #ff6666; font-size: 11px; letter-spacing: 0.5px; display: none;"></div>
+    
+    <div style="margin-top: 24px; color: rgba(255,255,255,0.3); font-size: 10px; letter-spacing: 0.5px; line-height: 1.6;">
+      テスト用メール:<br>
+      toshi@example.com
+    </div>
+    
+    <!-- ユーザー登録ボタン -->
+    <div style="margin-top: 30px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <div style="color: rgba(255,255,255,0.4); font-size: 11px; letter-spacing: 1px; margin-bottom: 12px;">アカウントをお持ちでない場合</div>
+      <button onclick="document.getElementById('login-modal').style.display='none'; document.getElementById('register-modal').style.display='flex';" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: rgba(100,180,255,0.9); font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.2)'" onmouseout="this.style.background='rgba(100,180,255,0.1)'">🚀 ユーザー登録</button>
+    </div>
   </div>
 </div>
 
-<!-- ユーザー登録モーダル -->
-<div id="register-modal" class="auth-modal">
-  <div class="auth-container">
-    <div class="auth-title">🚀 ユーザー登録</div>
-    <div class="auth-subtitle" id="register-subtitle">STEP 1 / 2</div>
-    
-    <div class="auth-error" id="register-error"></div>
-    <div class="auth-success" id="register-success"></div>
+<!-- ユーザー登録画面 -->
+<div id="register-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; overflow-y: auto;">
+  <div style="text-align: center; max-width: 350px; padding: 40px 20px;">
+    <div style="color: #fff; font-size: 32px; letter-spacing: 3px; margin-bottom: 10px;">🚀</div>
+    <div style="color: #fff; font-size: 20px; letter-spacing: 2px; margin-bottom: 30px;">ユーザー登録</div>
     
     <!-- STEP 1: メール・パスワード -->
-    <div class="auth-step active" id="register-step1">
-      <div class="auth-form-group">
-        <label class="auth-label">メールアドレス *</label>
-        <input type="email" id="register-email" class="auth-input" placeholder="your@email.com" required>
+    <div id="register-step1" style="display: block;">
+      <div style="color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 20px;">STEP 1: アカウント作成</div>
+      
+      <div style="margin-bottom: 16px; text-align: left;">
+        <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">メールアドレス *</label>
+        <input type="email" id="register-email" placeholder="your@email.com" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
       </div>
       
-      <div class="auth-form-group">
-        <label class="auth-label">パスワード *</label>
-        <input type="password" id="register-password" class="auth-input" placeholder="••••••••" 
-               minlength="8" oninput="checkPasswordStrength(this.value)" required>
-        <div class="password-strength">
-          <div class="password-strength-bar" id="password-strength-bar"></div>
-        </div>
-        <div class="password-feedback" id="password-feedback"></div>
+      <div style="margin-bottom: 20px; text-align: left;">
+        <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">パスワード *</label>
+        <input type="password" id="register-password" placeholder="••••••••（8文字以上）" minlength="8" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
       </div>
       
-      <div class="auth-form-group">
-        <label class="auth-label">パスワード確認 *</label>
-        <input type="password" id="register-password-confirm" class="auth-input" 
-               placeholder="••••••••" minlength="8" required>
+      <div style="margin-bottom: 20px; text-align: left;">
+        <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">パスワード確認 *</label>
+        <input type="password" id="register-password-confirm" placeholder="••••••••" minlength="8" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
       </div>
       
-      <div class="auth-buttons">
-        <button type="button" class="auth-btn-secondary" onclick="switchToLogin()">
-          ← ログイン
-        </button>
-        <button type="button" class="auth-btn-primary" onclick="registerStep1()">
-          次へ →
-        </button>
-      </div>
+      <div id="register-step1-error" style="color: #ff6666; font-size: 11px; margin-bottom: 12px; display: none;"></div>
+      
+      <button id="register-step1-btn" onclick="registerStep1()" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.25); border: 1px solid rgba(100,180,255,0.5); border-radius: 8px; color: #88ccff; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">次へ →</button>
+      
+      <button onclick="document.getElementById('register-modal').style.display='none'; document.getElementById('login-modal').style.display='flex';" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s; margin-top: 12px;">← ログイン画面に戻る</button>
     </div>
     
     <!-- STEP 2: ユーザー名・母船名 -->
-    <div class="auth-step" id="register-step2">
-      <div class="auth-form-group">
-        <label class="auth-label">ユーザー名 *</label>
-        <input type="text" id="register-name" class="auth-input" placeholder="例: 宇宙開拓者" 
-               maxlength="20" oninput="checkRegisterForm()" required>
+    <div id="register-step2" style="display: none;">
+      <div style="color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 20px;">STEP 2: プロフィール作成</div>
+      
+      <div style="margin-bottom: 16px; text-align: left;">
+        <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">ユーザー名 *</label>
+        <input type="text" id="register-name" placeholder="例: 宇宙開拓者" maxlength="20" oninput="checkRegisterForm()" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
       </div>
       
-      <div class="auth-form-group">
-        <label class="auth-label">母船の名前 *</label>
-        <input type="text" id="register-mothership" class="auth-input" placeholder="例: アルカディア母船" 
-               maxlength="30" oninput="checkRegisterForm()" required>
+      <div style="margin-bottom: 20px; text-align: left;">
+        <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">母船の名前 *</label>
+        <input type="text" id="register-mothership" placeholder="例: アルカディア母船" maxlength="30" oninput="checkRegisterForm()" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
       </div>
       
-      <div class="auth-buttons">
-        <button type="button" class="auth-btn-secondary" onclick="goRegisterStep1()">
-          ← 戻る
-        </button>
-        <button type="button" class="auth-btn-primary" id="register-step2-btn" onclick="confirmRegister()" disabled>
-          🌌 作成する
-        </button>
-      </div>
+      <button id="register-step2-btn" onclick="confirmRegister()" disabled style="width: 100%; padding: 12px; background: rgba(100,180,255,0.25); border: 1px solid rgba(100,180,255,0.5); border-radius: 8px; color: #88ccff; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">宇宙へ出発する ✓</button>
+      
+      <button onclick="goRegisterStep1()" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s; margin-top: 12px;">← 戻る</button>
     </div>
   </div>
 </div>
@@ -1032,7 +1012,7 @@
   <!-- 右上：ユーザーコントロール -->
   <div id="user-controls" style="position: absolute; top: 18px; right: 18px; z-index: 50; display: flex; gap: 10px; align-items: center;">
     <!-- ログインボタン（未ログイン時のみ表示） -->
-    <button id="login-btn" onclick="document.getElementById('login-modal').classList.add('active')" 
+    <button id="login-btn" onclick="document.getElementById('login-modal').style.display='flex'" 
       style="padding: 9px 16px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 20px; font-size: 11px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">
       ログイン
     </button>
@@ -1415,109 +1395,37 @@ function showLoginUI() {
   });
 }
 
-
-
-// ===== 認証UI制御 =====
-function switchToRegister() {
-  document.getElementById('login-modal').classList.remove('active');
-  document.getElementById('register-modal').classList.add('active');
-  clearAuthErrors();
+function login(userIndex) {
+  currentUserIndex = userIndex;
+  user = { ...testUsers[userIndex] };
+  
+  // ログイン画面を非表示
+  document.getElementById('login-screen').style.display = 'none';
+  // アプリケーション画面を表示
+  document.getElementById('app').style.display = 'block';
+  
+  // ゲーム初期化
+  initializeMap();
+  updateUserStatus();
 }
 
-function switchToLogin() {
-  document.getElementById('register-modal').classList.remove('active');
-  document.getElementById('login-modal').classList.add('active');
-  clearAuthErrors();
+function logout() {
+  // アプリケーション画面を非表示
+  document.getElementById('app').style.display = 'none';
+  // ログイン画面を表示
+  document.getElementById('login-screen').style.display = 'flex';
 }
 
-function clearAuthErrors() {
-  document.getElementById('login-error').classList.remove('show');
-  document.getElementById('register-error').classList.remove('show');
-  document.getElementById('register-success').classList.remove('show');
-}
-
-function showAuthError(modalId, message) {
-  clearAuthErrors();
-  const errorEl = document.getElementById(modalId + '-error');
-  if (errorEl) {
-    errorEl.textContent = message;
-    errorEl.classList.add('show');
-  }
-}
-
-function showAuthSuccess(modalId, message) {
-  const successEl = document.getElementById(modalId + '-success');
-  if (successEl) {
-    successEl.textContent = message;
-    successEl.classList.add('show');
-  }
-}
-
-// ===== パスワード強度チェック =====
-function checkPasswordStrength(password) {
-  const bar = document.getElementById('password-strength-bar');
-  const feedback = document.getElementById('password-feedback');
-  
-  if (!bar) return;
-  
-  bar.className = 'password-strength-bar';
-  let strength = 0;
-  let messages = [];
-  
-  if (password.length >= 8) strength++;
-  if (password.length >= 12) strength++;
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-  if (/\d/.test(password)) strength++;
-  if (/[!@#$%^&*]/.test(password)) strength++;
-  
-  if (strength <= 1) {
-    bar.classList.add('weak');
-    messages.push('弱い：大文字・数字・記号を混ぜるともっと安全です');
-  } else if (strength <= 3) {
-    bar.classList.add('medium');
-    messages.push('中：さらに複雑にするとより安全です');
-  } else {
-    bar.classList.add('strong');
-    messages.push('強い：良好なパスワードです');
-  }
-  
-  if (feedback) {
-    feedback.textContent = messages.join(' ');
-  }
-}
-
-// ===== ログイン =====
-async function handleLogin(event) {
-  event.preventDefault();
-  
-  const email = document.getElementById('login-email').value.trim();
+function handleLogin() {
+  const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
   
   if (!email || !password) {
-    showAuthError('login', 'メールアドレスとパスワードを入力してください');
+    alert('メールアドレスとパスワードを入力してください');
     return;
   }
   
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-    
-    if (error) throw error;
-    
-    // ログイン成功
-    document.getElementById('login-modal').classList.remove('active');
-    
-  } catch (err) {
-    let message = 'ログインに失敗しました';
-    if (err.message.includes('Invalid')) {
-      message = 'メールアドレスまたはパスワードが正しくありません';
-    } else if (err.message.includes('Email not confirmed')) {
-      message = 'メールアドレスの確認が必要です';
-    }
-    showAuthError('login', message);
-  }
+  alert('テスト用メール/パスワード認証：\nSupabase Auth の signInWithPassword() をご使用ください。\n\n現在は Google OAuth のみ有効です。');
 }
 
 async function loginWithGoogle() {
@@ -1531,28 +1439,26 @@ async function loginWithGoogle() {
     
     if (error) throw error;
   } catch (err) {
-    showAuthError('login', 'Google ログインに失敗しました: ' + err.message);
+    alert('Google ログインに失敗しました: ' + err.message);
   }
 }
 
 async function loadPlanetsFromDB() {
   try {
     console.log('🔄 Loading planets from DB...');
+    showDebug('🔄 Loading from DB...');
     const { data, error } = await supabaseClient
       .from('planets')
       .select('*');
     
     if (error) {
       console.error('❌ DB Error:', error);
+      showDebug('❌ DB Error: ' + error.message);
       return;
     }
     
-    console.log('✅ Loaded from DB:', data?.length || 0, 'planets');
-    
-    if (!data || data.length === 0) {
-      console.warn('⚠️ DB is empty - no planets to display');
-      return;
-    }
+    console.log('✅ Loaded from DB:', data.length, 'planets');
+    showDebug('✅ Loaded: ' + data.length + ' planets');
     
     // DB から読み込んだ惑星をメモリに変換
     const dbPlanets = data.map(row => ({
@@ -1579,12 +1485,12 @@ async function loadPlanetsFromDB() {
     ];
     
     console.log('✅ Total planets in memory:', planets.length);
+    showDebug('✅ Total: ' + planets.length + ' in memory');
     
     // チャンク構造に追加
     dbPlanets.forEach(p => addToChunk(p));
     
   } catch (err) {
-    console.error('❌ Error loading planets:', err);
   }
 }
 
@@ -1646,6 +1552,7 @@ let zoom = 1, offX = 0, offY = 0;
 // ページロード時に (0,0) が中央に来るように初期化
 async function initializeMap() {
   console.log('🗺️ Initializing map...');
+  showDebug('🗺️ Initializing map...');
   offX = window.innerWidth / 2;
   offY = window.innerHeight / 2;
   
@@ -1657,6 +1564,10 @@ async function initializeMap() {
   drawStars();
   render();
   console.log('✅ Map initialized');
+  showDebug('✅ Map initialized. Planets: ' + planets.length);
+  
+  // アニメーションループを開始
+  animateBlackhole();
 }
 let dragging = false, dragX = 0, dragY = 0, wasDragging = false;
 let placingMode = false;
@@ -2911,7 +2822,7 @@ function openCreateModal() {
   // ログイン確認：ユーザー登録済みか確認
   if (!user) {
     alert('惑星を作成するにはログインが必要です');
-    document.getElementById('login-modal').classList.add('active');
+    document.getElementById('login-modal').style.display = 'flex';
     return;
   }
   
@@ -3002,8 +2913,8 @@ async function initializeAuthenticatedGame(session) {
     updateUserStatus();
   } else {
     // 新規ユーザー → 登録画面を表示
-    document.getElementById('login-modal').classList.remove('active');
-    document.getElementById('register-modal').classList.add('active');
+    document.getElementById('login-modal').style.display = 'none';
+    document.getElementById('register-modal').style.display = 'flex';
     
     // 登録フォームのバリデーション
     document.getElementById('register-name').addEventListener('input', checkRegisterForm);
@@ -3024,20 +2935,24 @@ async function registerStep1() {
   const email = document.getElementById('register-email').value.trim();
   const password = document.getElementById('register-password').value;
   const passwordConfirm = document.getElementById('register-password-confirm').value;
+  const errorEl = document.getElementById('register-step1-error');
   
   // バリデーション
   if (!email || !password || !passwordConfirm) {
-    showAuthError('register', 'すべて入力してください');
+    errorEl.textContent = '❌ すべて入力してください';
+    errorEl.style.display = 'block';
     return;
   }
   
   if (password.length < 8) {
-    showAuthError('register', 'パスワードは8文字以上です');
+    errorEl.textContent = '❌ パスワードは8文字以上です';
+    errorEl.style.display = 'block';
     return;
   }
   
   if (password !== passwordConfirm) {
-    showAuthError('register', 'パスワードが一致しません');
+    errorEl.textContent = '❌ パスワードが一致しません';
+    errorEl.style.display = 'block';
     return;
   }
   
@@ -3049,26 +2964,25 @@ async function registerStep1() {
     });
     
     if (error) {
-      showAuthError('register', error.message);
+      errorEl.textContent = '❌ ' + error.message;
+      errorEl.style.display = 'block';
       return;
     }
     
     // STEP 2 へ進む
-    document.getElementById('register-step1').classList.remove('active');
-    document.getElementById('register-step2').classList.add('active');
-    document.getElementById('register-subtitle').textContent = 'STEP 2 / 2';
-    clearAuthErrors();
+    document.getElementById('register-step1').style.display = 'none';
+    document.getElementById('register-step2').style.display = 'block';
+    errorEl.style.display = 'none';
   } catch (err) {
-    showAuthError('register', 'エラーが発生しました: ' + err.message);
+    errorEl.textContent = '❌ エラーが発生しました';
+    errorEl.style.display = 'block';
   }
 }
 
 // STEP 2: STEP 1 に戻る
 function goRegisterStep1() {
-  document.getElementById('register-step1').classList.add('active');
-  document.getElementById('register-step2').classList.remove('active');
-  document.getElementById('register-subtitle').textContent = 'STEP 1 / 2';
-  clearAuthErrors();
+  document.getElementById('register-step1').style.display = 'block';
+  document.getElementById('register-step2').style.display = 'none';
 }
 
 // ユーザー登録確定
@@ -3077,15 +2991,12 @@ async function confirmRegister() {
   const mothership = document.getElementById('register-mothership').value.trim();
   
   if (!name || !mothership) {
-    showAuthError('register', 'ユーザー名と母船の名前を入力してください');
+    alert('ユーザー名と母船の名前を入力してください');
     return;
   }
   
   const session = (await supabaseClient.auth.getSession()).data.session;
-  if (!session) {
-    showAuthError('register', 'セッションが無効です。もう一度ログインしてください');
-    return;
-  }
+  if (!session) return;
   
   try {
     // users テーブルに新規ユーザーを登録
@@ -3112,17 +3023,12 @@ async function confirmRegister() {
       }
     };
     
-    showAuthSuccess('register', `「${name}」での登録に成功しました。宇宙へ出発します...`);
-    
-    setTimeout(() => {
-      document.getElementById('register-modal').classList.remove('active');
-      updateAuthUI(true);
-      initializeMap();
-      updateUserStatus();
-    }, 1500);
-    
+    document.getElementById('register-modal').style.display = 'none';
+    updateAuthUI(true);
+    await initializeMap();
+    updateUserStatus();
   } catch (err) {
-    showAuthError('register', 'ユーザー登録に失敗しました: ' + err.message);
+    alert('ユーザー登録に失敗しました: ' + err.message);
   }
 }
 
@@ -3487,7 +3393,7 @@ function openInvadeDialog() {
   // ログイン確認
   if (!user) {
     alert('侵略するにはログインが必要です');
-    document.getElementById('login-modal').classList.add('active');
+    document.getElementById('login-modal').style.display = 'flex';
     return;
   }
   
@@ -3629,6 +3535,7 @@ async function confirmInvade() {
 let debugMessages = [];
 const MAX_DEBUG_LINES = 5;
 
+function showDebug(msg) {
   debugMessages.push(msg);
   if (debugMessages.length > MAX_DEBUG_LINES) {
     debugMessages.shift();
