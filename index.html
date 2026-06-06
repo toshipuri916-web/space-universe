@@ -590,7 +590,7 @@
 </head>
 <body>
 <!-- ===== ログイン画面 ===== -->
-<div id="login-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;">
+<div id="login-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;">
   <div style="text-align: center; max-width: 350px;">
     <div style="color: #fff; font-size: 32px; letter-spacing: 3px; margin-bottom: 10px;">🌌</div>
     <div style="color: #fff; font-size: 20px; letter-spacing: 2px; margin-bottom: 40px;">宇宙創造プラットフォーム</div>
@@ -622,7 +622,29 @@
   </div>
 </div>
 
-<div id="app" style="display: none;">
+<!-- ユーザー登録画面 -->
+<div id="register-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; overflow-y: auto;">
+  <div style="text-align: center; max-width: 350px; padding: 40px 20px;">
+    <div style="color: #fff; font-size: 32px; letter-spacing: 3px; margin-bottom: 10px;">🚀</div>
+    <div style="color: #fff; font-size: 20px; letter-spacing: 2px; margin-bottom: 30px;">プロフィール作成</div>
+    
+    <div style="margin-bottom: 16px; text-align: left;">
+      <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">ユーザー名 *</label>
+      <input type="text" id="register-name" placeholder="例: 宇宙開拓者" maxlength="20" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
+    </div>
+    
+    <div style="margin-bottom: 20px; text-align: left;">
+      <label style="display: block; color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 1px; margin-bottom: 8px;">母船の名前 *</label>
+      <input type="text" id="register-mothership" placeholder="例: アルカディア母船" maxlength="30" style="width: 100%; padding: 12px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); border-radius: 8px; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; box-sizing: border-box; outline: none;">
+    </div>
+    
+    <button id="register-confirm-btn" onclick="confirmRegister()" disabled style="width: 100%; padding: 12px; background: rgba(100,180,255,0.25); border: 1px solid rgba(100,180,255,0.5); border-radius: 8px; color: #88ccff; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">宇宙へ出発する ✓</button>
+    
+    <button onclick="document.getElementById('register-modal').style.display='none'" style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s; margin-top: 12px;">キャンセル</button>
+  </div>
+</div>
+
+<div id="app" style="display: block;">
   <canvas id="starfield"></canvas>
   <canvas id="bhCanvas"></canvas>
   <canvas id="forbiddenCanvas"></canvas>
@@ -720,6 +742,21 @@
   </div>
 
   <button id="back-btn" onclick="backToMap()">← 宇宙マップ</button>
+  
+  <!-- 右上：ユーザーコントロール -->
+  <div id="user-controls" style="position: absolute; top: 18px; right: 18px; z-index: 50; display: flex; gap: 10px; align-items: center;">
+    <!-- ステータスボタン（状態により ログイン/宇宙手帳に切り替わり） -->
+    <button id="user-btn" onclick="userButtonClick()" 
+      style="padding: 10px 18px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 8px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">
+      ログイン
+    </button>
+    
+    <!-- ログアウトボタン（ログイン時のみ表示） -->
+    <button id="logout-btn" onclick="logoutUser()" style="display: none; padding: 10px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); border-radius: 8px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">
+      ログアウト
+    </button>
+  </div>
+  
   <div id="zoom-controls">
     <div id="zoom-display" style="text-align: center; color: rgba(255,255,255,0.5); font-size: 10px; letter-spacing: 1px; margin-bottom: 5px;">1.0×</div>
     <button class="zoom-btn" onclick="zoomIn()">+</button>
@@ -917,8 +954,6 @@
       <button onclick="scrollHandbookDown()" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.28)'" onmouseout="this.style.background='rgba(100,180,255,0.15)'">▼</button>
     </div>
     
-    <!-- ログアウトボタン -->
-    <button onclick="logout()" style="width: 100%; padding: 10px; margin-top: 16px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 12px; font-size: 12px; cursor: pointer; letter-spacing: 1px; font-family: 'Courier New', monospace; transition: all 0.2s;">🚪 ログアウト</button>
   </div>
 
 <!-- 侵略ダイアログ -->
@@ -2573,6 +2608,7 @@ async function initializeAuthenticatedGame(session) {
     .single();
   
   if (userData) {
+    // 既存ユーザー → ゲーム開始
     user = {
       id: userData.user_id,
       name: userData.name,
@@ -2583,13 +2619,112 @@ async function initializeAuthenticatedGame(session) {
       }
     };
     
-    // ログイン画面を非表示 → ゲーム画面を表示
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    // UI更新
+    updateAuthUI(true);
     
     // ゲーム初期化
     await initializeMap();
     updateUserStatus();
+  } else {
+    // 新規ユーザー → 登録画面を表示
+    document.getElementById('login-modal').style.display = 'none';
+    document.getElementById('register-modal').style.display = 'flex';
+    
+    // 登録フォームのバリデーション
+    document.getElementById('register-name').addEventListener('input', checkRegisterForm);
+    document.getElementById('register-mothership').addEventListener('input', checkRegisterForm);
+  }
+}
+
+// ユーザー登録フォームのバリデーション
+function checkRegisterForm() {
+  const name = document.getElementById('register-name').value.trim();
+  const mothership = document.getElementById('register-mothership').value.trim();
+  const btn = document.getElementById('register-confirm-btn');
+  btn.disabled = !(name && mothership);
+}
+
+// ユーザー登録確定
+async function confirmRegister() {
+  const name = document.getElementById('register-name').value.trim();
+  const mothership = document.getElementById('register-mothership').value.trim();
+  
+  if (!name || !mothership) {
+    alert('ユーザー名と母船の名前を入力してください');
+    return;
+  }
+  
+  const session = (await supabaseClient.auth.getSession()).data.session;
+  if (!session) return;
+  
+  try {
+    // users テーブルに新規ユーザーを登録
+    const { error } = await supabaseClient
+      .from('users')
+      .insert({
+        user_id: session.user.id,
+        name: name,
+        mothership_name: mothership,
+        stella: 100,
+        mothership_population: 0
+      });
+    
+    if (error) throw error;
+    
+    // ゲーム画面を表示
+    user = {
+      id: session.user.id,
+      name: name,
+      stella: 100,
+      mothership: {
+        population: 0,
+        maxCapacity: 100000
+      }
+    };
+    
+    document.getElementById('register-modal').style.display = 'none';
+    updateAuthUI(true);
+    await initializeMap();
+    updateUserStatus();
+  } catch (err) {
+    alert('ユーザー登録に失敗しました: ' + err.message);
+  }
+}
+
+// ユーザーボタンクリック時の処理
+function userButtonClick() {
+  if (user) {
+    // ログイン状態 → 宇宙手帳を開く
+    toggleHandbook();
+  } else {
+    // ログアウト状態 → ログイン画面を表示
+    document.getElementById('login-modal').style.display = 'flex';
+  }
+}
+
+// UI表示更新（ログイン状態）
+function updateAuthUI(isLoggedIn) {
+  const userBtn = document.getElementById('user-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  
+  if (isLoggedIn) {
+    userBtn.textContent = '🔖 宇宙手帳';
+    logoutBtn.style.display = 'block';
+  } else {
+    userBtn.textContent = 'ログイン';
+    logoutBtn.style.display = 'none';
+  }
+}
+
+// ログアウト
+async function logoutUser() {
+  try {
+    await supabaseClient.auth.signOut();
+    user = null;
+    updateAuthUI(false);
+    closeHandbook();
+  } catch (err) {
+    alert('ログアウト失敗: ' + err.message);
   }
 }
 
@@ -2599,9 +2734,10 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
     // ログイン状態 → ゲーム開始
     await initializeAuthenticatedGame(session);
   } else {
-    // ログアウト状態 → ログイン画面
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
+    // ログアウト状態 → マップは表示したまま、UI をログイン状態に
+    user = null;
+    updateAuthUI(false);
+    // ログイン画面は表示しない（マップを見せる）
   }
 });
 
@@ -2609,6 +2745,21 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
 function animateBlackhole() {
   updateBlackhole();
   requestAnimationFrame(animateBlackhole);
+}
+
+// ===== 宇宙辞書（ユーザーパネル）=====
+
+function toggleHandbook() {
+  const handbook = document.getElementById('handbook-panel');
+  if (handbook.style.transform === 'translateX(100%)' || !handbook.style.transform) {
+    handbook.style.transform = 'translateX(0)';
+  } else {
+    handbook.style.transform = 'translateX(100%)';
+  }
+}
+
+function closeHandbook() {
+  document.getElementById('handbook-panel').style.transform = 'translateX(100%)';
 }
 
 // ===== 宇宙手帳機能 =====
