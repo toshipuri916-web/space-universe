@@ -869,38 +869,55 @@
         </div>
 
         <!-- 惑星詳細パネル -->
-        <div id="planet-detail-modal" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 40px 20px;">
-            <div style="max-width: 500px; width: 100%; text-align: center;">
-                <!-- 惑星を大きく円形で表示 -->
-                <div id="detail-planet-orb" style="width: 140px; height: 140px; border-radius: 50%; margin: 0 auto 30px; box-shadow: 0 0 40px rgba(74,158,221,0.6); animation: pulse 3s ease-in-out infinite;"></div>
+        <div id="planet-detail-modal" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 0;">
+            <div style="max-width: 500px; width: 100%; height: 100%; display: flex; flex-direction: column; background: rgba(0,10,30,0.95); position: relative;">
                 
-                <!-- 惑星名 -->
-                <div id="planet-name-title" style="font-size: 28px; font-weight: bold; color: #fff; margin-bottom: 8px; letter-spacing: 3px;">惑星名</div>
-                
-                <!-- 惑星ID -->
-                <div id="detail-planet-id" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 20px; font-family: 'Courier New', monospace;">ID: xxxxxx</div>
-                
-                <!-- 説明 -->
-                <div id="detail-description" style="font-size: 13px; color: rgba(200,220,255,0.8); line-height: 1.6; margin-bottom: 20px; text-align: center;">説明がありません</div>
-                
-                <!-- タグ -->
-                <div id="detail-tags" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center;"></div>
-                
-                <!-- 発見者と所有者情報 -->
-                <div style="padding: 15px; background: rgba(100,180,255,0.08); border-radius: 8px; margin-bottom: 20px; font-size: 12px;">
-                    <div style="margin-bottom: 8px; color: rgba(100,150,255,0.7);">
-                        ✨ 発見者：<span id="detail-explorer-name" style="color: #88ccff; font-weight: bold;">-</span>
+                <!-- スクロール領域 -->
+                <div id="detail-content-area" style="flex: 1; overflow-y: auto; padding: 30px 20px; text-align: left;">
+                    
+                    <!-- 惑星を大きく円形で表示 -->
+                    <div style="text-align: center;">
+                        <div id="detail-planet-orb" style="width: 140px; height: 140px; border-radius: 50%; margin: 0 auto 30px; box-shadow: 0 0 40px rgba(74,158,221,0.6); animation: pulse 3s ease-in-out infinite;"></div>
+                        
+                        <!-- 惑星名 -->
+                        <div id="planet-name-title" style="font-size: 28px; font-weight: bold; color: #fff; margin-bottom: 8px; letter-spacing: 3px;">惑星名</div>
+                        
+                        <!-- 惑星ID -->
+                        <div id="detail-planet-id" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 20px; font-family: 'Courier New', monospace;">ID: xxxxxx</div>
+                        
+                        <!-- 説明 -->
+                        <div id="detail-description" style="font-size: 13px; color: rgba(200,220,255,0.8); line-height: 1.6; margin-bottom: 20px; text-align: center;">説明がありません</div>
+                        
+                        <!-- タグ -->
+                        <div id="detail-tags" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center;"></div>
+                        
+                        <!-- 発見者と所有者情報 -->
+                        <div style="padding: 15px; background: rgba(100,180,255,0.08); border-radius: 8px; margin-bottom: 30px; font-size: 12px;">
+                            <div style="margin-bottom: 8px; color: rgba(100,150,255,0.7);">
+                                ✨ 発見者：<span id="detail-explorer-name" style="color: #88ccff; font-weight: bold;">-</span>
+                            </div>
+                            <div style="color: rgba(100,150,255,0.7);">
+                                👑 現在の支配者：<span id="detail-owner-name" style="color: #ffd700; font-weight: bold;">-</span>
+                            </div>
+                        </div>
                     </div>
-                    <div style="color: rgba(100,150,255,0.7);">
-                        👑 現在の支配者：<span id="detail-owner-name" style="color: #ffd700; font-weight: bold;">-</span>
+                    
+                    <!-- 投稿一覧 -->
+                    <div style="margin-top: 0; padding-top: 0; border-top: none;">
+                        <div style="font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 15px; text-align: center;">✏️ コンテンツ（<span id="detail-contents-count">0</span>件）</div>
+                        <div id="detail-contents-list" style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">コンテンツはまだありません</div>
+                        </div>
                     </div>
+                
                 </div>
                 
-                <!-- アクションボタン -->
-                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                    <button id="visit-btn" style="flex: 1; min-width: 150px; max-width: 200px; padding: 12px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 8px; cursor: pointer; font-size: 12px; transition: all 0.2s;">🌍 訪問する</button>
-                    <button id="shine-btn" style="flex: 1; min-width: 150px; max-width: 200px; padding: 12px; background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700; border-radius: 8px; cursor: pointer; font-size: 12px; transition: all 0.2s;">✨ 輝かせる</button>
-                    <button id="invade-btn" style="flex: 1; min-width: 150px; max-width: 200px; padding: 12px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 8px; cursor: pointer; font-size: 12px; transition: all 0.2s; display: none;">⚔️ 侵略する</button>
+                <!-- ボトム固定アクションバー -->
+                <div id="detail-actions-bar" style="padding: 15px 20px; background: rgba(0,20,40,0.9); border-top: 1px solid rgba(100,180,255,0.2); display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                    <button id="visit-btn" style="flex: 1; min-width: 80px; padding: 10px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s;">🌍 訪問</button>
+                    <button id="shine-btn" style="flex: 1; min-width: 80px; padding: 10px; background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s;">✨ 輝かせる</button>
+                    <button id="invade-btn" style="flex: 1; min-width: 80px; padding: 10px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s; display: none;">⚔️ 侵略</button>
+                    <button id="post-btn" style="flex: 1; min-width: 80px; padding: 10px; background: rgba(200,150,255,0.15); border: 1px solid rgba(200,150,255,0.4); color: #dd88ff; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s; display: none;">✏️ 投稿</button>
                 </div>
                 
                 <!-- 閉じるボタン -->
@@ -1197,11 +1214,143 @@
         </div>
     </div>
 
+    <!-- 投稿モーダル -->
+    <div id="post-modal" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 101; padding: 20px;">
+        <div style="max-width: 500px; width: 100%; background: rgba(0,30,60,0.95); border: 1px solid rgba(200,150,255,0.3); border-radius: 12px; padding: 30px; max-height: 90vh; overflow-y: auto;">
+            <!-- タイトル -->
+            <div style="font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 8px;">✏️ コンテンツを投稿</div>
+            <div style="font-size: 12px; color: rgba(200,150,255,0.6); margin-bottom: 20px;">
+                惑星「<span id="post-planet-name">--</span>」
+            </div>
+            
+            <!-- 投稿フォーム -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 11px; color: rgba(200,150,255,0.6); margin-bottom: 6px;">タイトル</label>
+                <input type="text" id="post-title" placeholder="例：美しい夕焼けの風景" style="width: 100%; padding: 10px; background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 6px; color: #fff; font-size: 12px; box-sizing: border-box;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 11px; color: rgba(200,150,255,0.6); margin-bottom: 6px;">コンテンツ本文</label>
+                <textarea id="post-body" placeholder="この惑星について、素敵な発見や思い出を書いてください..." style="width: 100%; padding: 10px; background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 6px; color: #fff; font-size: 12px; box-sizing: border-box; min-height: 120px; resize: vertical; font-family: inherit;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 11px; color: rgba(200,150,255,0.6); margin-bottom: 6px;">URL（リンク）</label>
+                <input type="url" id="post-url" placeholder="https://example.com" style="width: 100%; padding: 10px; background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 6px; color: #fff; font-size: 12px; box-sizing: border-box;">
+            </div>
+            <!-- ボタン -->
+            <div style="display: flex; gap: 12px;">
+                <button id="post-confirm-btn" style="flex: 1; padding: 12px; background: rgba(200,150,255,0.15); border: 1px solid rgba(200,150,255,0.4); color: #dd88ff; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">📤 投稿</button>
+                <button id="post-cancel-btn" style="flex: 1; padding: 12px; background: rgba(100,100,100,0.15); border: 1px solid rgba(100,100,100,0.4); color: #999; border-radius: 8px; cursor: pointer; font-size: 12px; transition: all 0.2s;">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編集コンテンツモーダル -->
+    <div id="edit-content-modal" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 101; padding: 20px;">
+        <div style="max-width: 500px; width: 100%; background: rgba(0,30,60,0.95); border: 1px solid rgba(200,150,255,0.3); border-radius: 12px; padding: 30px; max-height: 90vh; overflow-y: auto;">
+            <!-- タイトル -->
+            <div style="font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 20px;">✏️ コンテンツを編集</div>
+            
+            <!-- 編集フォーム -->
+            <input type="hidden" id="edit-content-id">
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 11px; color: rgba(200,150,255,0.6); margin-bottom: 6px;">タイトル</label>
+                <input type="text" id="edit-content-title" placeholder="例：美しい夕焼けの風景" style="width: 100%; padding: 10px; background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 6px; color: #fff; font-size: 12px; box-sizing: border-box;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 11px; color: rgba(200,150,255,0.6); margin-bottom: 6px;">コンテンツ本文</label>
+                <textarea id="edit-content-body" placeholder="この惑星について、素敵な発見や思い出を書いてください..." style="width: 100%; padding: 10px; background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 6px; color: #fff; font-size: 12px; box-sizing: border-box; min-height: 120px; resize: vertical; font-family: inherit;"></textarea>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 11px; color: rgba(200,150,255,0.6); margin-bottom: 6px;">URL（リンク）</label>
+                <input type="url" id="edit-content-url" placeholder="https://example.com" style="width: 100%; padding: 10px; background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 6px; color: #fff; font-size: 12px; box-sizing: border-box;">
+            </div>
+            
+            <!-- ボタン -->
+            <div style="display: flex; gap: 12px;">
+                <button id="edit-content-confirm-btn" style="flex: 1; padding: 12px; background: rgba(200,150,255,0.15); border: 1px solid rgba(200,150,255,0.4); color: #dd88ff; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">💾 保存</button>
+                <button id="edit-content-cancel-btn" style="flex: 1; padding: 12px; background: rgba(100,100,100,0.15); border: 1px solid rgba(100,100,100,0.4); color: #999; border-radius: 8px; cursor: pointer; font-size: 12px; transition: all 0.2s;">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 侵略モーダル -->
+    <div id="invade-modal" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 101; padding: 20px;">
+        <div style="max-width: 500px; width: 100%; background: rgba(0,30,60,0.95); border: 1px solid rgba(255,100,100,0.3); border-radius: 12px; padding: 30px; max-height: 90vh; overflow-y: auto;">
+            <!-- タイトル -->
+            <div style="font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 8px;">⚔️ 惑星侵略</div>
+            <div style="font-size: 12px; color: rgba(255,150,150,0.6); margin-bottom: 20px;">
+                対象：「<span id="invade-planet-name">--</span>」
+            </div>
+            
+            <!-- 投入人口スライダー -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 11px; color: rgba(255,150,150,0.6); margin-bottom: 6px;">投入人口</label>
+                <div style="margin-bottom: 10px;">
+                    <input type="range" id="invade-slider" min="0" max="1000" value="0" style="width: 100%; cursor: pointer;">
+                </div>
+                <input type="number" id="invade-input" min="0" max="1000" value="0" style="width: 100%; padding: 10px; background: rgba(255,100,100,0.08); border: 1px solid rgba(255,100,100,0.3); border-radius: 6px; color: #fff; font-size: 12px; box-sizing: border-box;">
+                <div style="color: rgba(255,150,150,0.6); font-size: 10px; margin-top: 6px;">
+                    保有人口: <span id="invade-fleet-info">0</span>
+                </div>
+            </div>
+            
+            <!-- ボタン -->
+            <div style="display: flex; gap: 12px;">
+                <button id="invade-confirm-btn" style="flex: 1; padding: 12px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">⚔️ 侵略実行</button>
+                <button id="invade-cancel-btn" style="flex: 1; padding: 12px; background: rgba(100,100,100,0.15); border: 1px solid rgba(100,100,100,0.4); color: #999; border-radius: 8px; cursor: pointer; font-size: 12px; transition: all 0.2s;">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- コメント表示モーダル -->
+    <div id="comments-modal" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 102; padding: 20px;">
+        <div style="max-width: 600px; width: 100%; height: 90vh; background: rgba(0,10,30,0.95); border: 1px solid rgba(100,180,255,0.2); border-radius: 12px; display: flex; flex-direction: column; position: relative;">
+            
+            <!-- ヘッダー -->
+            <div style="padding: 20px; border-bottom: 1px solid rgba(100,180,255,0.2);">
+                <div id="comments-modal-title" style="font-size: 16px; font-weight: bold; color: #88ccff; margin-bottom: 6px;">コンテンツタイトル</div>
+                <div id="comments-modal-author" style="font-size: 11px; color: rgba(100,150,255,0.6);">投稿者 • 日時</div>
+            </div>
+            
+            <!-- コンテンツ本文 -->
+            <div style="padding: 15px 20px; background: rgba(100,180,255,0.05); border-bottom: 1px solid rgba(100,180,255,0.1);">
+                <div id="comments-modal-body" style="font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.6; word-wrap: break-word;">コンテンツ本文</div>
+            </div>
+            
+            <!-- URL リンク -->
+            <div id="comments-modal-url" style="padding: 10px 20px; border-bottom: 1px solid rgba(100,180,255,0.1); display: none;"></div>
+            
+            <!-- コメント領域 -->
+            <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+                <div style="font-size: 13px; font-weight: bold; color: #fff; margin-bottom: 15px;">💬 コメント</div>
+                <div id="comments-modal-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; min-height: 0; max-height: 100%;">
+                    <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">コメント読み込み中...</div>
+                </div>
+            </div>
+            
+            <!-- コメント投稿フォーム -->
+            <div style="padding: 15px 20px; border-top: 1px solid rgba(100,180,255,0.2); background: rgba(0,0,0,0.3);">
+                <textarea id="comments-modal-input" placeholder="コメントを入力..." style="width: 100%; padding: 10px; background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.2); border-radius: 6px; color: #fff; font-size: 11px; resize: vertical; min-height: 60px; box-sizing: border-box; font-family: 'Courier New', monospace;"></textarea>
+                <button id="comments-modal-submit" style="width: 100%; margin-top: 8px; padding: 10px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s;">💬 コメント投稿</button>
+            </div>
+            
+            <!-- 閉じるボタン -->
+            <button id="comments-modal-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: rgba(255,255,255,0.6); font-size: 28px; cursor: pointer; transition: all 0.2s;">×</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
         /* ═══════════════════════════════════════════════════════════════
            Supabase 初期化
            ═══════════════════════════════════════════════════════════════ */
-
+        
         // Supabase 設定（2026-06-06 Toshi の環境に合わせて設定済み）
         const SUPABASE_URL = 'https://iuzaxanstkjahrzigtpu.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_FOFypCxCAgXrOJE3H5TEjQ_9zfLB5Jp';
@@ -1213,11 +1362,117 @@
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
         } catch (e) {
-            console.log('Supabase not initialized (development mode)');
+            // Supabase 初期化失敗（ローカルモード）
         }
 
         // 環境判定
         const IS_SUPABASE_ENABLED = supabaseClient !== null;
+        
+        /* ═══════════════════════════════════════════════════════════════
+           共通ルール（モーダル・フォーム・API・スクロール）
+           ═══════════════════════════════════════════════════════════════ */
+        
+        // ① モーダルフレームワーク
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.add('hidden');
+            }
+        }
+        
+        // モーダルの背景クリックで閉じる（data-modal 属性がついているもの）
+        document.addEventListener('click', (e) => {
+            if (e.target.dataset.modal) {
+                closeModal(e.target.id);
+            }
+        });
+        
+        // ② フォーム送信フレームワーク
+        async function submitForm(tableName, data, onSuccess, onError) {
+            if (!IS_SUPABASE_ENABLED) {
+                showNotification('⚠ Supabase が有効ではありません', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from(tableName)
+                    .insert(data);
+                
+                if (error) {
+                    showNotification(`⚠ 送信に失敗しました: ${error.message}`, 'error');
+                    onError && onError(error);
+                    return;
+                }
+                
+                showNotification('✨ 送信しました', 'success');
+                onSuccess && onSuccess();
+            } catch (err) {
+                showNotification('⚠ エラーが発生しました', 'error');
+                onError && onError(err);
+            }
+        }
+        
+        // ③ API ラッパー（Supabase CRUD）
+        async function dbInsert(tableName, data) {
+            if (!IS_SUPABASE_ENABLED) return { data: null, error: 'Supabase disabled' };
+            const { data: result, error } = await supabaseClient
+                .from(tableName)
+                .insert(data);
+            if (error) console.error(`dbInsert error (${tableName}):`, error);
+            return { data: result, error };
+        }
+        
+        async function dbSelect(tableName, conditions = {}) {
+            if (!IS_SUPABASE_ENABLED) return { data: null, error: 'Supabase disabled' };
+            let query = supabaseClient.from(tableName).select();
+            Object.entries(conditions).forEach(([key, value]) => {
+                query = query.eq(key, value);
+            });
+            const { data, error } = await query;
+            if (error) console.error(`dbSelect error (${tableName}):`, error);
+            return { data, error };
+        }
+        
+        async function dbSelectSingle(tableName, conditions = {}) {
+            if (!IS_SUPABASE_ENABLED) return { data: null, error: 'Supabase disabled' };
+            let query = supabaseClient.from(tableName).select();
+            Object.entries(conditions).forEach(([key, value]) => {
+                query = query.eq(key, value);
+            });
+            const { data, error } = await query.single();
+            if (error) console.error(`dbSelectSingle error (${tableName}):`, error);
+            return { data, error };
+        }
+        
+        async function dbUpdate(tableName, id, data) {
+            if (!IS_SUPABASE_ENABLED) return { error: 'Supabase disabled' };
+            const { error } = await supabaseClient
+                .from(tableName)
+                .update(data)
+                .eq('id', id);
+            if (error) console.error(`dbUpdate error (${tableName}):`, error);
+            return { error };
+        }
+        
+        async function dbDelete(tableName, id) {
+            if (!IS_SUPABASE_ENABLED) return { error: 'Supabase disabled' };
+            const { error } = await supabaseClient
+                .from(tableName)
+                .delete()
+                .eq('id', id);
+            if (error) console.error(`dbDelete error (${tableName}):`, error);
+            return { error };
+        }
+        
+        // ④ スクロール機能は CSS overflow-y: auto だけで対応（シンプル）
+        
         /* ═══════════════════════════════════════════════════════════════
            定数定義（確定）
            ═══════════════════════════════════════════════════════════════ */
@@ -1252,9 +1507,9 @@
         let zoom = 1.0;
         let currentZoomIndex = 2;
 
-        // カメラ位置（画面中央に原点を配置するため -500 から開始）
-        let offX = -500;
-        let offY = -500;
+        // カメラ位置（画面中央に原点 (0, 0) を配置）
+        let offX = 0;
+        let offY = 0;
 
         // 惑星サイズ
         const PLANET_SIZE_GRID = {
@@ -1360,35 +1615,35 @@
 
         function planetBg(p) {
             if (p.barren) {
-                // 文明なし：黒い雲24個版（濃淡強化）+ 指定色ベース
+                // 文明なし：黒い雲24個版（濃淡強化、サイズ大きく）+ 指定色ベース
                 const color = p.color;
                 return `
-                    radial-gradient(circle at 10% 15%, rgba(0,0,0,0.38) 0%, transparent 22%),
-                    radial-gradient(circle at 88% 85%, rgba(0,0,0,0.36) 0%, transparent 21%),
-                    radial-gradient(circle at 82% 12%, rgba(0,0,0,0.32) 0%, transparent 18%),
-                    radial-gradient(circle at 15% 80%, rgba(0,0,0,0.31) 0%, transparent 17%),
-                    radial-gradient(circle at 52% 8%, rgba(0,0,0,0.3) 0%, transparent 16%),
-                    radial-gradient(circle at 92% 60%, rgba(0,0,0,0.29) 0%, transparent 15%),
-                    radial-gradient(circle at 32% 35%, rgba(0,0,0,0.24) 0%, transparent 12%),
-                    radial-gradient(circle at 68% 48%, rgba(0,0,0,0.23) 0%, transparent 11%),
-                    radial-gradient(circle at 38% 72%, rgba(0,0,0,0.25) 0%, transparent 12%),
-                    radial-gradient(circle at 25% 22%, rgba(0,0,0,0.22) 0%, transparent 11%),
-                    radial-gradient(circle at 75% 68%, rgba(0,0,0,0.24) 0%, transparent 12%),
-                    radial-gradient(circle at 8% 50%, rgba(0,0,0,0.16) 0%, transparent 7%),
-                    radial-gradient(circle at 92% 28%, rgba(0,0,0,0.15) 0%, transparent 7%),
-                    radial-gradient(circle at 52% 25%, rgba(0,0,0,0.14) 0%, transparent 6%),
-                    radial-gradient(circle at 42% 58%, rgba(0,0,0,0.15) 0%, transparent 7%),
-                    radial-gradient(circle at 65% 15%, rgba(0,0,0,0.14) 0%, transparent 6%),
-                    radial-gradient(circle at 18% 38%, rgba(0,0,0,0.13) 0%, transparent 6%),
-                    radial-gradient(circle at 22% 8%, rgba(0,0,0,0.1) 0%, transparent 4%),
-                    radial-gradient(circle at 72% 42%, rgba(0,0,0,0.09) 0%, transparent 4%),
-                    radial-gradient(circle at 12% 72%, rgba(0,0,0,0.08) 0%, transparent 3%),
-                    radial-gradient(circle at 82% 78%, rgba(0,0,0,0.09) 0%, transparent 4%),
-                    radial-gradient(circle at 48% 62%, rgba(0,0,0,0.1) 0%, transparent 4%),
-                    radial-gradient(circle at 35% 88%, rgba(0,0,0,0.08) 0%, transparent 3%),
-                    radial-gradient(circle at 62% 8%, rgba(0,0,0,0.09) 0%, transparent 4%),
-                    radial-gradient(circle at 25% 25%, rgba(180,180,170,0.18) 0%, transparent 30%),
-                    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.4) 0%, transparent 35%),
+                    radial-gradient(circle at 10% 15%, rgba(0,0,0,0.38) 0%, transparent 35%),
+                    radial-gradient(circle at 88% 85%, rgba(0,0,0,0.36) 0%, transparent 34%),
+                    radial-gradient(circle at 82% 12%, rgba(0,0,0,0.32) 0%, transparent 30%),
+                    radial-gradient(circle at 15% 80%, rgba(0,0,0,0.31) 0%, transparent 28%),
+                    radial-gradient(circle at 52% 8%, rgba(0,0,0,0.3) 0%, transparent 28%),
+                    radial-gradient(circle at 92% 60%, rgba(0,0,0,0.29) 0%, transparent 26%),
+                    radial-gradient(circle at 32% 35%, rgba(0,0,0,0.24) 0%, transparent 24%),
+                    radial-gradient(circle at 68% 48%, rgba(0,0,0,0.23) 0%, transparent 23%),
+                    radial-gradient(circle at 38% 72%, rgba(0,0,0,0.25) 0%, transparent 24%),
+                    radial-gradient(circle at 25% 22%, rgba(0,0,0,0.22) 0%, transparent 22%),
+                    radial-gradient(circle at 75% 68%, rgba(0,0,0,0.24) 0%, transparent 24%),
+                    radial-gradient(circle at 8% 50%, rgba(0,0,0,0.16) 0%, transparent 18%),
+                    radial-gradient(circle at 92% 28%, rgba(0,0,0,0.15) 0%, transparent 17%),
+                    radial-gradient(circle at 52% 25%, rgba(0,0,0,0.14) 0%, transparent 16%),
+                    radial-gradient(circle at 42% 58%, rgba(0,0,0,0.15) 0%, transparent 17%),
+                    radial-gradient(circle at 65% 15%, rgba(0,0,0,0.14) 0%, transparent 16%),
+                    radial-gradient(circle at 18% 38%, rgba(0,0,0,0.13) 0%, transparent 15%),
+                    radial-gradient(circle at 22% 8%, rgba(0,0,0,0.1) 0%, transparent 14%),
+                    radial-gradient(circle at 72% 42%, rgba(0,0,0,0.09) 0%, transparent 13%),
+                    radial-gradient(circle at 12% 72%, rgba(0,0,0,0.08) 0%, transparent 12%),
+                    radial-gradient(circle at 82% 78%, rgba(0,0,0,0.09) 0%, transparent 13%),
+                    radial-gradient(circle at 48% 62%, rgba(0,0,0,0.1) 0%, transparent 14%),
+                    radial-gradient(circle at 35% 88%, rgba(0,0,0,0.08) 0%, transparent 12%),
+                    radial-gradient(circle at 62% 8%, rgba(0,0,0,0.09) 0%, transparent 13%),
+                    radial-gradient(circle at 25% 25%, rgba(180,180,170,0.18) 0%, transparent 35%),
+                    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.4) 0%, transparent 45%),
                     radial-gradient(circle at 35% 35%, ${lighten(color)} 0%, ${color} 30%, ${color}cc 60%, ${color}88 85%, ${color}33 100%)
                 `;
             }
@@ -1608,8 +1863,6 @@
         function render() {
             const mapView = document.getElementById('map-view');
             mapView.innerHTML = '';
-            
-            console.log('render() called, planets count:', planets.length, 'offX:', offX, 'offY:', offY, 'zoom:', zoom);
 
             planets.forEach((p) => {
                 const el = document.createElement('div');
@@ -1630,8 +1883,6 @@
                 
                 el.style.left = leftPos + 'px';
                 el.style.top = topPos + 'px';
-                
-                console.log(`Planet: ${p.name}, gridX: ${p.gridX}, gridY: ${p.gridY}, left: ${leftPos}, top: ${topPos}, size: ${sizePx}`);
 
                 const lbl = document.createElement('div');
                 lbl.className = 'planet-label';
@@ -1876,9 +2127,47 @@
                 invadeBtn.style.display = 'none';
             }
             
+            // 投稿ボタンの表示制御
+            // 自分が所有者（制作者）の場合のみ表示
+            const postBtn = document.getElementById('post-btn');
+            if (currentUser && planet.ownerId === currentUser.userId) {
+                postBtn.style.display = 'inline-block';
+                postBtn.onclick = () => openPostModal(planet);
+            } else {
+                postBtn.style.display = 'none';
+            }
+            
             // モーダル表示
             const modal = document.getElementById('planet-detail-modal');
             modal.style.display = 'flex';
+            
+            // スクロール対応（マウスホイール）
+            const contentArea = document.getElementById('detail-content-area');
+            if (contentArea) {
+                contentArea.onwheel = function(e) {
+                    e.preventDefault();
+                    this.scrollTop += e.deltaY;
+                };
+            }
+            
+            // 投稿を読み込む
+            loadPlanetContents(planet.id);
+        }
+        
+        function zoomToPlanet(planet) {
+            // 惑星の位置を画面中央に配置
+            offX = -planet.gridX;
+            offY = -planet.gridY;
+            
+            // ズームレベルを 2.5 に設定
+            currentZoomIndex = ZOOM_LEVELS.indexOf(2.5);
+            if (currentZoomIndex === -1) {
+                currentZoomIndex = 6; // インデックス 6 = 2.5
+            }
+            zoom = ZOOM_LEVELS[currentZoomIndex];
+            
+            // マップを再描画
+            render();
         }
 
         function closePlanetDetail() {
@@ -1886,10 +2175,769 @@
             selectedPlanet = null;
         }
 
+        function loadPlanetContents(planetId) {
+            if (!IS_SUPABASE_ENABLED) {
+                // ローカルモード
+                document.getElementById('detail-contents-list').innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">コンテンツはまだありません</div>';
+                document.getElementById('detail-contents-count').textContent = '0';
+                return;
+            }
+            
+            // Supabase から投稿を取得
+            supabaseClient
+                .from('contents')
+                .select('id, title, body, url, explorer_id, created_at, good_count, bad_count')
+                .eq('planet_id', planetId)
+                .order('created_at', { ascending: false })
+                .then(({ data, error }) => {
+                    if (error) {
+                        console.error('投稿読み込みエラー:', error);
+                        return;
+                    }
+                    
+                    const contentsList = document.getElementById('detail-contents-list');
+                    const contentsCount = document.getElementById('detail-contents-count');
+                    
+                    if (!data || data.length === 0) {
+                        contentsList.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">コンテンツはまだありません</div>';
+                        contentsCount.textContent = '0';
+                        return;
+                    }
+                    
+                    contentsCount.textContent = data.length;
+                    contentsList.innerHTML = '';
+                    
+                    // 投稿一覧を表示
+                    data.forEach(content => {
+                        // 投稿者の名前を取得
+                        supabaseClient
+                            .from('users')
+                            .select('username')
+                            .eq('id', content.explorer_id)
+                            .single()
+                            .then(({ data: userData }) => {
+                                const explorerName = userData?.username || '不明';
+                                
+                                // 投稿カードを作成
+                                const contentCard = document.createElement('div');
+                                contentCard.style.cssText = `
+                                    padding: 12px;
+                                    background: rgba(100,180,255,0.08);
+                                    border: 1px solid rgba(100,180,255,0.2);
+                                    border-radius: 8px;
+                                    font-size: 11px;
+                                    margin-bottom: 12px;
+                                `;
+                                
+                                // 日時フォーマット
+                                const date = new Date(content.created_at);
+                                const dateStr = date.toLocaleString('ja-JP', { 
+                                    month: 'short', 
+                                    day: 'numeric', 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                });
+                                
+                                // URL リンク HTML
+                                const urlHtml = content.url 
+                                    ? `<div style="margin: 8px 0;"><a href="${content.url}" target="_blank" rel="noopener noreferrer" style="color: #4db8ff; text-decoration: underline; font-size: 10px;">🔗 ${new URL(content.url).hostname}</a></div>`
+                                    : '';
+                                
+                                contentCard.innerHTML = `
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                                        <div>
+                                            <div style="color: #88ccff; font-weight: bold;">${content.title}</div>
+                                            <div style="color: rgba(100,150,255,0.6); font-size: 10px; white-space: nowrap; margin-top: 3px;">${dateStr}</div>
+                                        </div>
+                                        ${currentUser && content.explorer_id === currentUser.userId 
+                                            ? `<div style="display: flex; gap: 4px; margin-left: 8px;">
+                                                <button class="content-edit-btn" data-content-id="${content.id}" style="padding: 3px 6px; background: rgba(100,180,255,0.1); border: 1px solid rgba(100,180,255,0.3); color: #88ccff; border-radius: 3px; font-size: 9px; cursor: pointer;">✏️</button>
+                                                <button class="content-delete-btn" data-content-id="${content.id}" style="padding: 3px 6px; background: rgba(200,100,100,0.1); border: 1px solid rgba(200,100,100,0.3); color: #dd8888; border-radius: 3px; font-size: 9px; cursor: pointer;">🗑</button>
+                                            </div>`
+                                            : ''
+                                        }
+                                    </div>
+                                    <div style="color: rgba(255,255,255,0.7); margin-bottom: 8px; line-height: 1.4; word-wrap: break-word;">${content.body}</div>
+                                    ${urlHtml}
+                                    <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                        <button class="content-good-btn" data-content-id="${content.id}" style="flex: 1; padding: 6px; background: rgba(100,200,100,0.1); border: 1px solid rgba(100,200,100,0.3); color: #88dd88; border-radius: 4px; font-size: 10px; cursor: pointer;">👍 <span class="good-count">${content.good_count || 0}</span></button>
+                                        <button class="content-bad-btn" data-content-id="${content.id}" style="flex: 1; padding: 6px; background: rgba(200,100,100,0.1); border: 1px solid rgba(200,100,100,0.3); color: #dd8888; border-radius: 4px; font-size: 10px; cursor: pointer;">👎 <span class="bad-count">${content.bad_count || 0}</span></button>
+                                    </div>
+                                `;
+                                
+                                const titleElement = contentCard.querySelector('div:first-child');
+                                titleElement.style.cursor = 'pointer';
+                                titleElement.onclick = (e) => {
+                                    e.stopPropagation();
+                                    openCommentsModal(content, explorerName);
+                                };
+                                
+                                // いいねボタン
+                                contentCard.querySelector('.content-good-btn').addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    evaluateContent(content.id, 'good');
+                                });
+                                
+                                // バッドボタン
+                                contentCard.querySelector('.content-bad-btn').addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    evaluateContent(content.id, 'bad');
+                                });
+                                
+                                // 編集ボタン（制作者のみ）
+                                const editBtn = contentCard.querySelector('.content-edit-btn');
+                                if (editBtn) {
+                                    editBtn.addEventListener('click', (e) => {
+                                        e.stopPropagation();
+                                        openEditContentModal(content);
+                                    });
+                                }
+                                
+                                // 削除ボタン（制作者のみ）
+                                const deleteBtn = contentCard.querySelector('.content-delete-btn');
+                                if (deleteBtn) {
+                                    deleteBtn.addEventListener('click', (e) => {
+                                        e.stopPropagation();
+                                        deleteContent(content.id, content.title);
+                                    });
+                                }
+                                
+                                // ユーザーが既に評価済みかチェック（アクティブ状態を表示）
+                                if (IS_SUPABASE_ENABLED && currentUser) {
+                                    supabaseClient
+                                        .from('evaluations')
+                                        .select('type')
+                                        .eq('content_id', content.id)
+                                        .eq('user_id', currentUser.userId)
+                                        .then(({ data, error }) => {
+                                            if (error) {
+                                                // エラーは無視（結果なしの場合など）
+                                                return;
+                                            }
+                                            
+                                            if (data && data.length > 0) {
+                                                const evaluationType = data[0].type;
+                                                const button = contentCard.querySelector(`.content-${evaluationType}-btn`);
+                                                if (button) {
+                                                    button.style.backgroundColor = evaluationType === 'good' 
+                                                        ? 'rgba(100,200,100,0.2)' 
+                                                        : 'rgba(200,100,100,0.2)';
+                                                }
+                                            }
+                                        });
+                                }
+                                
+                                document.getElementById('detail-contents-list').appendChild(contentCard);
+                            })
+                            .catch(err => console.error('投稿者名取得エラー:', err));
+                    });
+                })
+                .catch(error => {
+                    console.error('投稿読 込みエラー:', error);
+                });
+        }
+
+        function openCommentsModal(content, explorerName) {
+            const modal = document.getElementById('comments-modal');
+            
+            // コンテンツ情報を表示
+            document.getElementById('comments-modal-title').textContent = content.title;
+            
+            const date = new Date(content.created_at);
+            const dateStr = date.toLocaleString('ja-JP', { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('comments-modal-author').textContent = `${explorerName} • ${dateStr}`;
+            document.getElementById('comments-modal-body').textContent = content.body;
+            
+            // URL リンク表示
+            const urlDiv = document.getElementById('comments-modal-url');
+            if (content.url) {
+                urlDiv.innerHTML = `<a href="${content.url}" target="_blank" rel="noopener noreferrer" style="color: #4db8ff; text-decoration: underline; font-size: 11px;">🔗 ${new URL(content.url).hostname}</a>`;
+                urlDiv.style.display = 'block';
+            } else {
+                urlDiv.style.display = 'none';
+            }
+            
+            // コメント入力フィールド初期化
+            document.getElementById('comments-modal-input').value = '';
+            
+            // コメント一覧を読み込む
+            loadCommentsModalComments(content.id);
+            
+            // コメント投稿ボタン
+            document.getElementById('comments-modal-submit').onclick = () => {
+                submitCommentsModalComment(content.id);
+            };
+            
+            // 閉じるボタン
+            document.getElementById('comments-modal-close').onclick = () => closeModal('comments-modal');
+            
+            // モーダル表示
+            modal.style.display = 'flex';
+            
+            // スクロール対応（マウスホイール）
+            const commentsList = document.getElementById('comments-modal-list');
+            if (commentsList) {
+                commentsList.onwheel = function(e) {
+                    e.preventDefault();
+                    this.scrollTop += e.deltaY;
+                };
+            }
+        }
+        
+        function loadCommentsModalComments(contentId) {
+            if (!IS_SUPABASE_ENABLED) {
+                document.getElementById('comments-modal-list').innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">コメント機能は利用できません</div>';
+                return;
+            }
+            
+            supabaseClient
+                .from('comments')
+                .select('id, text, user_id')
+                .eq('content_id', contentId)
+                .then(({ data, error }) => {
+                    if (error) {
+                        console.error('コメント取得エラー:', error);
+                        return;
+                    }
+                    
+                    const list = document.getElementById('comments-modal-list');
+                    
+                    if (!data || data.length === 0) {
+                        list.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">コメントはまだありません</div>';
+                        return;
+                    }
+                    
+                    // ユーザー名を取得してコメント表示
+                    list.innerHTML = '';
+                    
+                    Promise.all(data.map(comment => 
+                        supabaseClient
+                            .from('users')
+                            .select('username')
+                            .eq('id', comment.user_id)
+                            .single()
+                            .then(({ data: userData }) => ({
+                                ...comment,
+                                username: userData?.username || '不明'
+                            }))
+                    )).then(comments => {
+                        list.innerHTML = comments.map(comment => `
+                            <div style="background: rgba(100,180,255,0.08); padding: 10px; border-radius: 6px; border-left: 2px solid rgba(100,180,255,0.3);">
+                                <div style="color: #88ccff; font-size: 11px; font-weight: bold; margin-bottom: 4px;">${comment.username}</div>
+                                <div style="color: rgba(255,255,255,0.8); font-size: 12px; word-wrap: break-word;">${comment.text}</div>
+                            </div>
+                        `).join('');
+                    }).catch(err => {
+                        console.error('ユーザー名取得エラー:', err);
+                        list.innerHTML = comments.map(comment => `
+                            <div style="background: rgba(100,180,255,0.08); padding: 10px; border-radius: 6px; border-left: 2px solid rgba(100,180,255,0.3);">
+                                <div style="color: #88ccff; font-size: 11px; font-weight: bold; margin-bottom: 4px;">不明</div>
+                                <div style="color: rgba(255,255,255,0.8); font-size: 12px; word-wrap: break-word;">${comment.text}</div>
+                            </div>
+                        `).join('');
+                    });
+                })
+                .catch(error => {
+                    console.error('コメント取得エラー:', error);
+                    document.getElementById('comments-modal-list').innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">コメント取得に失敗しました</div>';
+                });
+        }
+        
+        function submitCommentsModalComment(contentId) {
+            if (!currentUser) {
+                showNotification('⚠ コメントするにはログインが必要です', 'warning');
+                return;
+            }
+            
+            const text = document.getElementById('comments-modal-input').value.trim();
+            if (!text) {
+                showNotification('⚠ コメントを入力してください', 'warning');
+                return;
+            }
+            
+            if (!IS_SUPABASE_ENABLED) {
+                showNotification('⚠ Supabase が有効ではありません', 'error');
+                return;
+            }
+            
+            supabaseClient
+                .from('comments')
+                .insert({ content_id: contentId, user_id: currentUser.userId, text })
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('コメント投稿エラー:', error);
+                        showNotification('⚠ コメント投稿に失敗しました', 'error');
+                        return;
+                    }
+                    
+                    document.getElementById('comments-modal-input').value = '';
+                    loadCommentsModalComments(contentId);
+                    showNotification('✨ コメントを投稿しました', 'success');
+                })
+                .catch(error => {
+                    console.error('コメント投稿エラー:', error);
+                    showNotification('⚠ コメント投稿に失敗しました', 'error');
+                });
+        }
+
+        function openPostModal(planet) {
+            if (!planet) {
+                showNotification('⚠ 惑星情報が見つかりません', 'warning');
+                return;
+            }
+            
+            // 要素が存在するか確認
+            const postPlanetName = document.getElementById('post-planet-name');
+            if (!postPlanetName) {
+                console.error('post-planet-name 要素が見つかりません');
+                showNotification('⚠ モーダルの読み込みに失敗しました。ページをリロードしてください', 'error');
+                return;
+            }
+            
+            // 投稿モーダルを初期化
+            postPlanetName.textContent = planet.name;
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-body').value = '';
+            document.getElementById('post-url').value = '';
+            
+            // 確定ボタン
+            document.getElementById('post-confirm-btn').onclick = () => {
+                submitPost(planet);
+            };
+            
+            // キャンセルボタン
+            document.getElementById('post-cancel-btn').onclick = () => closeModal('post-modal');
+            
+            // 編集コンテンツモーダルの確認ボタン
+            document.getElementById('edit-content-confirm-btn').onclick = submitEditContent;
+            
+            // 編集コンテンツモーダルのキャンセルボタン
+            document.getElementById('edit-content-cancel-btn').onclick = () => closeModal('edit-content-modal');
+            
+            // モーダル表示
+            const modal = document.getElementById('post-modal');
+            modal.style.display = 'flex';
+            modal.classList.remove('hidden');
+        }
+        
+        function loadComments(contentId) {
+            if (!IS_SUPABASE_ENABLED) {
+                document.getElementById(`comments-${contentId}`).innerHTML = '<div style="color: rgba(255,255,255,0.4); font-size: 10px;">コメントなし</div>';
+                return;
+            }
+            
+            supabaseClient
+                .from('comments')
+                .select('id, user_id, text')
+                .eq('content_id', contentId)
+                .order('id', { ascending: true })
+                .then(({ data, error }) => {
+                    if (error) {
+                        console.error('コメント読み込みエラー:', error);
+                        return;
+                    }
+                    
+                    const commentsContainer = document.getElementById(`comments-${contentId}`);
+                    commentsContainer.innerHTML = '';
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(comment => {
+                            // コメント投稿者の名前を取得
+                            supabaseClient
+                                .from('users')
+                                .select('username')
+                                .eq('id', comment.user_id)
+                                .single()
+                                .then(({ data: userData }) => {
+                                    const username = userData?.username || '不明';
+                                    const commentEl = document.createElement('div');
+                                    commentEl.style.cssText = `
+                                        padding: 6px;
+                                        margin-bottom: 6px;
+                                        background: rgba(0,0,0,0.2);
+                                        border-radius: 4px;
+                                        font-size: 10px;
+                                    `;
+                                    commentEl.innerHTML = `
+                                        <div style="color: #88ccff; font-weight: bold; font-size: 9px;">${username}</div>
+                                        <div style="color: rgba(255,255,255,0.7); margin-top: 2px;">${comment.text}</div>
+                                    `;
+                                    commentsContainer.appendChild(commentEl);
+                                })
+                                .catch(err => console.error('コメント投稿者名取得エラー:', err));
+                        });
+                    } else {
+                        const noComments = document.createElement('div');
+                        noComments.style.cssText = 'color: rgba(255,255,255,0.4); font-size: 10px; margin-bottom: 8px;';
+                        noComments.textContent = 'コメントなし';
+                        commentsContainer.appendChild(noComments);
+                    }
+                    
+                    // コメント投稿フォーム
+                    const formContainer = document.createElement('div');
+                    formContainer.style.cssText = `
+                        margin-top: 8px;
+                        padding-top: 8px;
+                        border-top: 1px solid rgba(100,180,255,0.2);
+                    `;
+                    
+                    if (currentUser) {
+                        // ログイン済み：投稿フォーム表示
+                        formContainer.innerHTML = `
+                            <div style="margin-bottom: 6px;">
+                                <input type="text" id="comment-input-${contentId}" placeholder="コメントを入力..." style="width: 100%; padding: 4px 6px; background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.2); border-radius: 4px; color: #fff; font-size: 10px; box-sizing: border-box;">
+                            </div>
+                            <button onclick="submitComment('${contentId}')" style="width: 100%; padding: 4px; background: rgba(100,180,255,0.2); border: 1px solid rgba(100,180,255,0.3); color: #88ccff; border-radius: 4px; font-size: 10px; cursor: pointer; transition: all 0.2s;">💬 コメント</button>
+                        `;
+                    } else {
+                        // ログイン前：ログイン促促
+                        formContainer.innerHTML = '<div style="color: rgba(255,255,255,0.4); font-size: 10px; text-align: center;">コメントするにはログインが必要です</div>';
+                    }
+                    
+                    commentsContainer.appendChild(formContainer);
+                })
+                .catch(error => console.error('コメント読み込みエラー:', error));
+        }
+        
+        function submitComment(contentId) {
+            const input = document.getElementById(`comment-input-${contentId}`);
+            if (!input) return;
+            
+            const text = input.value.trim();
+            if (!text) {
+                showNotification('⚠ コメントを入力してください', 'warning');
+                return;
+            }
+            
+            if (!currentUser || !IS_SUPABASE_ENABLED) {
+                showNotification('⚠ ログインが必要です', 'warning');
+                return;
+            }
+            
+            // Supabase に保存
+            supabaseClient
+                .from('comments')
+                .insert([
+                    {
+                        content_id: contentId,
+                        user_id: currentUser.userId,
+                        text: text
+                    }
+                ])
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('コメント投稿エラー:', error);
+                        showNotification(`⚠ コメント投稿に失敗しました: ${error.message}`, 'error');
+                    } else {
+                        showNotification('✨ コメントを投稿しました！', 'success');
+                        input.value = '';
+                        // コメント一覧を再読み込み
+                        loadComments(contentId);
+                    }
+                })
+                .catch(error => {
+                    console.error('コメント投稿エラー:', error);
+                    showNotification('⚠ コメント投稿に失敗しました', 'error');
+                });
+        }
+        
+        function openEditContentModal(content) {
+            const modal = document.getElementById('edit-content-modal');
+            if (!modal) {
+                showNotification('⚠ 編集モーダルが見つかりません', 'error');
+                return;
+            }
+            
+            // フォームに現在の値を設定
+            document.getElementById('edit-content-id').value = content.id;
+            document.getElementById('edit-content-title').value = content.title;
+            document.getElementById('edit-content-body').value = content.body;
+            document.getElementById('edit-content-url').value = content.url || '';
+            
+            // ハンドラ設定（毎回設定する）
+            document.getElementById('edit-content-confirm-btn').onclick = submitEditContent;
+            document.getElementById('edit-content-cancel-btn').onclick = () => closeModal('edit-content-modal');
+            
+            // モーダル表示
+            modal.style.display = 'flex';
+        }
+        
+        function submitEditContent() {
+            const contentId = document.getElementById('edit-content-id').value;
+            const title = document.getElementById('edit-content-title').value.trim();
+            const body = document.getElementById('edit-content-body').value.trim();
+            const url = document.getElementById('edit-content-url').value.trim();
+            
+            if (!title || !body) {
+                showNotification('⚠ タイトルと本文は必須です', 'warning');
+                return;
+            }
+            
+            supabaseClient
+                .from('contents')
+                .update({ title, body, url: url || null })
+                .eq('id', contentId)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('編集エラー:', error);
+                        showNotification(`⚠ 編集に失敗しました: ${error.message}`, 'error');
+                        return;
+                    }
+                    
+                    showNotification(`✏️ 「${title}」を更新しました！`, 'success');
+                    closeModal('edit-content-modal');
+                    
+                    // コンテンツ一覧を再読み込み
+                    if (selectedPlanet) {
+                        loadPlanetContents(selectedPlanet.id);
+                    }
+                });
+        }
+        
+        function deleteContent(contentId, contentTitle) {
+            if (!confirm(`「${contentTitle}」を削除してもよろしいですか？`)) {
+                return;
+            }
+            
+            supabaseClient
+                .from('contents')
+                .delete()
+                .eq('id', contentId)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('削除エラー:', error);
+                        showNotification(`⚠ 削除に失敗しました: ${error.message}`, 'error');
+                        return;
+                    }
+                    
+                    showNotification('🗑 コンテンツを削除しました', 'success');
+                    
+                    // コンテンツ一覧を再読み込み
+                    if (selectedPlanet) {
+                        loadPlanetContents(selectedPlanet.id);
+                    }
+                });
+        }
+        
+        function evaluateContent(contentId, type) {
+            if (!IS_SUPABASE_ENABLED || !currentUser) {
+                showNotification('⚠ ログインが必要です', 'warning');
+                return;
+            }
+            
+            // ユーザーの既存評価を確認
+            supabaseClient
+                .from('evaluations')
+                .select('id, type')
+                .eq('content_id', contentId)
+                .eq('user_id', currentUser.userId)
+                .then(({ data, error }) => {
+                    if (error) {
+                        console.error('評価確認エラー:', error);
+                        return;
+                    }
+                    
+                    // 既存評価がない場合
+                    if (!data || data.length === 0) {
+                        insertEvaluation(contentId, type);
+                        return;
+                    }
+                    
+                    const existingEvaluation = data[0];
+                    
+                    // 同じ種類を押した場合 → 削除（toggle）
+                    if (existingEvaluation.type === type) {
+                        deleteEvaluation(existingEvaluation.id, contentId, type);
+                        return;
+                    }
+                    
+                    // 異なる種類を押した場合 → 更新（切り替え）
+                    updateEvaluation(existingEvaluation.id, contentId, existingEvaluation.type, type);
+                });
+        }
+        
+        function insertEvaluation(contentId, type) {
+            supabaseClient
+                .from('evaluations')
+                .insert([{
+                    content_id: contentId,
+                    user_id: currentUser.userId,
+                    type: type
+                }])
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('評価追加エラー:', error);
+                        return;
+                    }
+                    updateContentCount(contentId, type, 1);
+                    updateButtonUI(contentId, type);
+                    showNotification(type === 'good' ? '👍 いいね！' : '👎 バッド...', 'success');
+                });
+        }
+        
+        function deleteEvaluation(evaluationId, contentId, type) {
+            supabaseClient
+                .from('evaluations')
+                .delete()
+                .eq('id', evaluationId)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('評価削除エラー:', error);
+                        return;
+                    }
+                    updateContentCount(contentId, type, -1);
+                    updateButtonUI(contentId, null);
+                    showNotification('⊘ 評価を取り消しました', 'success');
+                });
+        }
+        
+        function updateEvaluation(evaluationId, contentId, oldType, newType) {
+            supabaseClient
+                .from('evaluations')
+                .update({ type: newType })
+                .eq('id', evaluationId)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('評価更新エラー:', error);
+                        return;
+                    }
+                    // 古いタイプのカウント -1
+                    updateContentCount(contentId, oldType, -1);
+                    // 新しいタイプのカウント +1
+                    updateContentCount(contentId, newType, 1);
+                    updateButtonUI(contentId, newType);
+                    showNotification(newType === 'good' ? '👍 いいねに変更' : '👎 バッドに変更', 'success');
+                });
+        }
+        
+        function updateContentCount(contentId, type, delta) {
+            if (!type) return;
+            
+            supabaseClient
+                .from('contents')
+                .select(`${type === 'good' ? 'good_count' : 'bad_count'}`)
+                .eq('id', contentId)
+                .then(({ data, error }) => {
+                    if (error || !data || data.length === 0) return;
+                    
+                    const currentCount = data[0][type === 'good' ? 'good_count' : 'bad_count'] || 0;
+                    const newCount = Math.max(0, currentCount + delta);
+                    
+                    supabaseClient
+                        .from('contents')
+                        .update({ [type === 'good' ? 'good_count' : 'bad_count']: newCount })
+                        .eq('id', contentId)
+                        .then(({ error: updateError }) => {
+                            if (updateError) {
+                                console.error('カウント更新エラー:', updateError);
+                                return;
+                            }
+                            
+                            const countElement = document.querySelector(`.content-${type}-btn[data-content-id="${contentId}"] .${type}-count`);
+                            if (countElement) {
+                                countElement.textContent = newCount;
+                            }
+                        });
+                });
+        }
+        
+        function updateButtonUI(contentId, activeType) {
+            const goodBtn = document.querySelector(`.content-good-btn[data-content-id="${contentId}"]`);
+            const badBtn = document.querySelector(`.content-bad-btn[data-content-id="${contentId}"]`);
+            
+            if (goodBtn) {
+                if (activeType === 'good') {
+                    goodBtn.disabled = false;
+                    goodBtn.style.opacity = '1';
+                    goodBtn.style.cursor = 'pointer';
+                    goodBtn.style.backgroundColor = 'rgba(100,200,100,0.2)';
+                } else {
+                    goodBtn.disabled = false;
+                    goodBtn.style.opacity = '1';
+                    goodBtn.style.cursor = 'pointer';
+                    goodBtn.style.backgroundColor = 'rgba(100,200,100,0.1)';
+                }
+            }
+            
+            if (badBtn) {
+                if (activeType === 'bad') {
+                    badBtn.disabled = false;
+                    badBtn.style.opacity = '1';
+                    badBtn.style.cursor = 'pointer';
+                    badBtn.style.backgroundColor = 'rgba(200,100,100,0.2)';
+                } else {
+                    badBtn.disabled = false;
+                    badBtn.style.opacity = '1';
+                    badBtn.style.cursor = 'pointer';
+                    badBtn.style.backgroundColor = 'rgba(200,100,100,0.1)';
+                }
+            }
+        }
+        
+        function submitPost(planet) {
+            const title = document.getElementById('post-title').value.trim();
+            const body = document.getElementById('post-body').value.trim();
+            const url = document.getElementById('post-url').value.trim();
+            
+            if (!title) {
+                showNotification('⚠ タイトルを入力してください', 'warning');
+                return;
+            }
+            
+            if (!body) {
+                showNotification('⚠ コンテンツを入力してください', 'warning');
+                return;
+            }
+            
+            if (!IS_SUPABASE_ENABLED || !currentUser) {
+                showNotification('⚠ ログインが必要です', 'warning');
+                return;
+            }
+            
+            // Supabase に保存
+            supabaseClient
+                .from('contents')
+                .insert([
+                    {
+                        planet_id: planet.id,
+                        explorer_id: currentUser.userId,
+                        title: title,
+                        body: body,
+                        url: url || null,
+                        good_count: 0,
+                        bad_count: 0
+                    }
+                ])
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('投稿エラー:', error);
+                        showNotification(`⚠ 投稿に失敗しました: ${error.message}`, 'error');
+                    } else {
+                        showNotification(`✨ 「${title}」を投稿しました！`, 'success');
+                        closeModal('post-modal');
+                        // 投稿一覧を即座に再読み込み
+                        loadPlanetContents(planet.id);
+                    }
+                });
+        }
+
         function jumpToPlanetCoord(gridX, gridY) {
             // マップの中央にその座標を配置
             offX = -gridX;
             offY = -gridY;
+            
+            // ズームレベルを 2.5 に設定
+            currentZoomIndex = ZOOM_LEVELS.indexOf(2.5);
+            if (currentZoomIndex === -1) {
+                currentZoomIndex = 6; // インデックス 6 = 2.5
+            }
+            zoom = ZOOM_LEVELS[currentZoomIndex];
+            
             render();
         }
 
@@ -1958,52 +3006,126 @@
         }
 
         function invadePlanet(planet) {
-            if (!planet) return;
-            
-            if (!currentUser) {
+            if (!planet || !currentUser) {
                 showNotification('⚠ ログインが必要です', 'warning');
                 return;
             }
             
-            // ステラチェック
-            const stellaCost = calculateStellaCost(planet.gridX, planet.gridY, planet.size);
-            if (currentUser.stella < stellaCost) {
-                showNotification(`⚠ ステラが不足しています（${stellaCost} 必要）`, 'error');
+            // 侵略モーダルを表示
+            const modal = document.getElementById('invade-modal');
+            const planetName = document.getElementById('invade-planet-name');
+            const slider = document.getElementById('invade-slider');
+            const input = document.getElementById('invade-input');
+            const fleetInfo = document.getElementById('invade-fleet-info');
+            
+            planetName.textContent = planet.name;
+            fleetInfo.textContent = currentUser.fleet_population.toLocaleString();
+            
+            // スライダーの最大値を保有人口に設定
+            slider.max = currentUser.fleet_population;
+            input.max = currentUser.fleet_population;
+            slider.value = 0;
+            input.value = 0;
+            
+            // スライダーと入力フィールドを同期
+            slider.oninput = () => {
+                input.value = slider.value;
+            };
+            input.oninput = () => {
+                slider.value = Math.min(input.value, currentUser.fleet_population);
+            };
+            
+            // 侵略実行ボタン
+            document.getElementById('invade-confirm-btn').onclick = () => {
+                executeInvasion(planet);
+            };
+            
+            // キャンセルボタン
+            document.getElementById('invade-cancel-btn').onclick = () => closeModal('invade-modal');
+            
+            modal.style.display = 'flex';
+        }
+        
+        function executeInvasion(planet) {
+            const troops = parseInt(document.getElementById('invade-input').value);
+            
+            if (troops <= 0) {
+                showNotification('⚠ 投入人口を指定してください', 'warning');
                 return;
             }
             
-            // ステラを消費
-            currentUser.stella -= stellaCost;
-            
-            // DB に owner_id を更新
-            if (IS_SUPABASE_ENABLED) {
-                supabaseClient
-                    .from('planets')
-                    .update({ owner_id: currentUser.userId })
-                    .eq('id', planet.id)
-                    .then(({ error }) => {
-                        if (error) {
-                            console.error('侵略更新エラー:', error);
-                            showNotification(`⚠ 侵略に失敗しました: ${error.message}`, 'error');
-                            // ステラを戻す
-                            currentUser.stella += stellaCost;
-                        } else {
-                            // 侵略成功
-                            planet.ownerId = currentUser.userId;
-                            showNotification(`⚔️ ${planet.name} を侵略しました！（${stellaCost} ステラ消費）`, 'success');
-                            closePlanetDetail();
-                            render();
-                            updateHeaderUI();
-                        }
-                    });
-            } else {
-                // ローカルモード
-                planet.ownerId = currentUser.userId;
-                showNotification(`⚔️ ${planet.name} を侵略しました！（${stellaCost} ステラ消費）`, 'success');
-                closePlanetDetail();
-                render();
-                updateHeaderUI();
+            if (troops > currentUser.fleet_population) {
+                showNotification('⚠ 保有人口を超えています', 'warning');
+                return;
             }
+            
+            if (!IS_SUPABASE_ENABLED) {
+                showNotification('⚠ Supabase が有効ではありません', 'error');
+                return;
+            }
+            
+            // 相手の人口を取得
+            supabaseClient
+                .from('planets')
+                .select('population, owner_id')
+                .eq('id', planet.id)
+                .single()
+                .then(({ data, error }) => {
+                    if (error) {
+                        console.error('惑星情報取得エラー:', error);
+                        showNotification('⚠ 惑星情報を取得できません', 'error');
+                        return;
+                    }
+                    
+                    const enemyPopulation = data.population;
+                    const isSuccess = troops >= enemyPopulation;
+                    
+                    // DB を更新
+                    const updates = {
+                        owner_id: isSuccess ? currentUser.userId : data.owner_id,
+                        population: Math.max(0, enemyPopulation - troops)
+                    };
+                    
+                    supabaseClient
+                        .from('planets')
+                        .update(updates)
+                        .eq('id', planet.id)
+                        .then(({ error: updateError }) => {
+                            if (updateError) {
+                                console.error('更新エラー:', updateError);
+                                showNotification('⚠ 侵略に失敗しました', 'error');
+                                return;
+                            }
+                            
+                            // 自分の人口を更新
+                            currentUser.fleet_population -= troops;
+                            
+                            // DB に保存
+                            supabaseClient
+                                .from('users')
+                                .update({ fleet_population: currentUser.fleet_population })
+                                .eq('id', currentUser.userId)
+                                .then(({ error: userError }) => {
+                                    if (isSuccess) {
+                                        showNotification(`✨ 侵略成功！「${planet.name}」を手に入れました！`, 'success');
+                                        planet.ownerId = currentUser.userId;
+                                    } else {
+                                        showNotification(`⚠ 侵略失敗。相手の防御が固かった...`, 'warning');
+                                    }
+                                    
+                                    closeModal('invade-modal');
+                                    render();
+                                })
+                                .catch(err => {
+                                    console.error('ユーザー更新エラー:', err);
+                                    showNotification('⚠ 人口更新に失敗しました', 'error');
+                                });
+                        });
+                })
+                .catch(error => {
+                    console.error('惑星情報取得エラー:', error);
+                    showNotification('⚠ 惑星情報を取得できません', 'error');
+                });
         }
 
         function shinePlanet() {
@@ -2750,6 +3872,15 @@
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(0)';
             panel.style.pointerEvents = 'auto';
+            
+            // スクロール対応（マウスホイール）
+            const handbookList = document.getElementById('handbook-list');
+            if (handbookList) {
+                handbookList.onwheel = function(e) {
+                    e.preventDefault();
+                    this.scrollTop += e.deltaY;
+                };
+            }
         }
 
         function closeHandbook() {
@@ -2789,6 +3920,7 @@
                     </div>
                     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                         <button onclick="openPlanetDetail(userPlanets[${idx}])" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">詳細</button>
+                        <button onclick="openPostModal(userPlanets[${idx}])" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(200,150,255,0.15); border: 1px solid rgba(200,150,255,0.4); color: #dd88ff; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">✏️ 投稿</button>
                         <button onclick="movePopulationToFleet(${idx})" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(100,200,100,0.15); border: 1px solid rgba(100,200,100,0.4); color: #88dd88; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">🚀 移動</button>
                         <button onclick="deletePlanetFromHandbook(${idx})" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">削除</button>
                     </div>
