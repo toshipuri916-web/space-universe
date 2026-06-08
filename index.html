@@ -2092,9 +2092,9 @@
             }
             
             // 投稿ボタンの表示制御
-            // 自分が所有者（制作者）の場合のみ表示
+            // 探索者（制作者）の場合のみ表示
             const postBtn = document.getElementById('post-btn');
-            if (currentUser && planet.ownerId === currentUser.userId) {
+            if (currentUser && planet.explorerId === currentUser.userId) {
                 postBtn.style.display = 'inline-block';
                 postBtn.onclick = () => openPostModal(planet);
             } else {
