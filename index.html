@@ -1391,10 +1391,24 @@
             // モーダル内で overflow-y を持つ全ての要素にスクロール対応
             const scrollableElements = modal.querySelectorAll('[style*="overflow-y: auto"]');
             scrollableElements.forEach(element => {
+                // マウスホイール対応（PC）
                 element.onwheel = function(e) {
                     e.preventDefault();
                     this.scrollTop += e.deltaY;
                 };
+                
+                // タッチスワイプ対応（スマホ）
+                let touchStartY = 0;
+                element.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+                
+                element.addEventListener('touchmove', (e) => {
+                    const touchCurrentY = e.touches[0].clientY;
+                    const deltaY = touchStartY - touchCurrentY;
+                    element.scrollTop += deltaY;
+                    touchStartY = touchCurrentY;
+                }, { passive: true });
             });
         }
         
