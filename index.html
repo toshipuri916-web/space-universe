@@ -3922,7 +3922,7 @@
         }
 
         function closeHandbook() {
-            isHandbookOpen = false;  // フラグ解除
+            isHandbookOpen = false;  // フラグ解除（最初に設定）
             
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(100%)';
@@ -4407,7 +4407,10 @@
             document.getElementById('step-create-btn').addEventListener('click', createPlanet);
 
             // 宇宙手帳
-            document.getElementById('close-handbook-btn').addEventListener('click', closeHandbook);
+            document.getElementById('close-handbook-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeHandbook();
+            });
             document.getElementById('handbook-create-btn').addEventListener('click', () => {
                 closeHandbook();
                 openCreationFlow();
