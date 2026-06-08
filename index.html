@@ -4203,6 +4203,12 @@
 
         // タッチスクロール（ドラッグ代替）
         document.addEventListener('touchstart', (e) => {
+            // 手帳が開いている場合は、マップ操作をスキップ
+            const handbookPanel = document.getElementById('handbook-panel');
+            if (handbookPanel && handbookPanel.style.transform === 'translateX(0)') {
+                return;
+            }
+            
             if (e.touches.length === 1) {
                 isDragging = true;
                 dragStartX = e.touches[0].clientX;
@@ -4213,6 +4219,12 @@
         }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
+            // 手帳が開いている場合は、マップ操作をスキップ
+            const handbookPanel = document.getElementById('handbook-panel');
+            if (handbookPanel && handbookPanel.style.transform === 'translateX(0)') {
+                return;
+            }
+            
             if (e.touches.length === 1 && isDragging) {
                 e.preventDefault();
                 const dx = (e.touches[0].clientX - dragStartX) / zoom;
