@@ -4206,6 +4206,7 @@
             // 手帳が開いている場合は、マップ操作をスキップ
             const handbookPanel = document.getElementById('handbook-panel');
             if (handbookPanel && handbookPanel.style.transform === 'translateX(0)') {
+                e.preventDefault();
                 return;
             }
             
@@ -4222,6 +4223,7 @@
             // 手帳が開いている場合は、マップ操作をスキップ
             const handbookPanel = document.getElementById('handbook-panel');
             if (handbookPanel && handbookPanel.style.transform === 'translateX(0)') {
+                e.preventDefault();
                 return;
             }
             
