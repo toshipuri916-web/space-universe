@@ -1377,6 +1377,11 @@
             const modal = document.getElementById(modalId);
             if (modal) {
                 modal.style.display = 'flex';
+                // 背景のマップを無効化
+                const mapView = document.getElementById('map-view');
+                if (mapView) {
+                    mapView.style.pointerEvents = 'none';
+                }
                 // モーダル内のスクロール可能な要素に onwheel を設定
                 initModalScroll(modal);
             }
@@ -1398,6 +1403,11 @@
             if (modal) {
                 modal.style.display = 'none';
                 modal.classList.add('hidden');
+                // 背景のマップを復帰
+                const mapView = document.getElementById('map-view');
+                if (mapView) {
+                    mapView.style.pointerEvents = 'auto';
+                }
             }
         }
         
