@@ -1375,7 +1375,22 @@
         // ① モーダルフレームワーク
         function openModal(modalId) {
             const modal = document.getElementById(modalId);
-            if (modal) modal.style.display = 'flex';
+            if (modal) {
+                modal.style.display = 'flex';
+                // モーダル内のスクロール可能な要素に onwheel を設定
+                initModalScroll(modal);
+            }
+        }
+        
+        function initModalScroll(modal) {
+            // モーダル内で overflow-y を持つ全ての要素にスクロール対応
+            const scrollableElements = modal.querySelectorAll('[style*="overflow-y: auto"]');
+            scrollableElements.forEach(element => {
+                element.onwheel = function(e) {
+                    e.preventDefault();
+                    this.scrollTop += e.deltaY;
+                };
+            });
         }
         
         function closeModal(modalId) {
@@ -2140,15 +2155,7 @@
             // モーダル表示
             const modal = document.getElementById('planet-detail-modal');
             modal.style.display = 'flex';
-            
-            // スクロール対応（マウスホイール）
-            const contentArea = document.getElementById('detail-content-area');
-            if (contentArea) {
-                contentArea.onwheel = function(e) {
-                    e.preventDefault();
-                    this.scrollTop += e.deltaY;
-                };
-            }
+            initModalScroll(modal);
             
             // 投稿を読み込む
             loadPlanetContents(planet.id);
@@ -2378,15 +2385,7 @@
             
             // モーダル表示
             modal.style.display = 'flex';
-            
-            // スクロール対応（マウスホイール）
-            const commentsList = document.getElementById('comments-modal-list');
-            if (commentsList) {
-                commentsList.onwheel = function(e) {
-                    e.preventDefault();
-                    this.scrollTop += e.deltaY;
-                };
-            }
+            initModalScroll(modal);
         }
         
         function loadCommentsModalComments(contentId) {
@@ -3872,15 +3871,7 @@
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(0)';
             panel.style.pointerEvents = 'auto';
-            
-            // スクロール対応（マウスホイール）
-            const handbookList = document.getElementById('handbook-list');
-            if (handbookList) {
-                handbookList.onwheel = function(e) {
-                    e.preventDefault();
-                    this.scrollTop += e.deltaY;
-                };
-            }
+            initModalScroll(panel);
         }
 
         function closeHandbook() {
