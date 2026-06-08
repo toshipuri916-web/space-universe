@@ -1434,83 +1434,6 @@
         });
         
         // ② フォーム送信フレームワーク
-        async function submitForm(tableName, data, onSuccess, onError) {
-            if (!IS_SUPABASE_ENABLED) {
-                showNotification('⚠ Supabase が有効ではありません', 'error');
-                return;
-            }
-            
-            try {
-                const { error } = await supabaseClient
-                    .from(tableName)
-                    .insert(data);
-                
-                if (error) {
-                    showNotification(`⚠ 送信に失敗しました: ${error.message}`, 'error');
-                    onError && onError(error);
-                    return;
-                }
-                
-                showNotification('✨ 送信しました', 'success');
-                onSuccess && onSuccess();
-            } catch (err) {
-                showNotification('⚠ エラーが発生しました', 'error');
-                onError && onError(err);
-            }
-        }
-        
-        // ③ API ラッパー（Supabase CRUD）
-        async function dbInsert(tableName, data) {
-            if (!IS_SUPABASE_ENABLED) return { data: null, error: 'Supabase disabled' };
-            const { data: result, error } = await supabaseClient
-                .from(tableName)
-                .insert(data);
-            if (error) console.error(`dbInsert error (${tableName}):`, error);
-            return { data: result, error };
-        }
-        
-        async function dbSelect(tableName, conditions = {}) {
-            if (!IS_SUPABASE_ENABLED) return { data: null, error: 'Supabase disabled' };
-            let query = supabaseClient.from(tableName).select();
-            Object.entries(conditions).forEach(([key, value]) => {
-                query = query.eq(key, value);
-            });
-            const { data, error } = await query;
-            if (error) console.error(`dbSelect error (${tableName}):`, error);
-            return { data, error };
-        }
-        
-        async function dbSelectSingle(tableName, conditions = {}) {
-            if (!IS_SUPABASE_ENABLED) return { data: null, error: 'Supabase disabled' };
-            let query = supabaseClient.from(tableName).select();
-            Object.entries(conditions).forEach(([key, value]) => {
-                query = query.eq(key, value);
-            });
-            const { data, error } = await query.single();
-            if (error) console.error(`dbSelectSingle error (${tableName}):`, error);
-            return { data, error };
-        }
-        
-        async function dbUpdate(tableName, id, data) {
-            if (!IS_SUPABASE_ENABLED) return { error: 'Supabase disabled' };
-            const { error } = await supabaseClient
-                .from(tableName)
-                .update(data)
-                .eq('id', id);
-            if (error) console.error(`dbUpdate error (${tableName}):`, error);
-            return { error };
-        }
-        
-        async function dbDelete(tableName, id) {
-            if (!IS_SUPABASE_ENABLED) return { error: 'Supabase disabled' };
-            const { error } = await supabaseClient
-                .from(tableName)
-                .delete()
-                .eq('id', id);
-            if (error) console.error(`dbDelete error (${tableName}):`, error);
-            return { error };
-        }
-        
         // ④ スクロール機能は CSS overflow-y: auto だけで対応（シンプル）
         
         /* ═══════════════════════════════════════════════════════════════
@@ -3897,48 +3820,22 @@
                 return;
             }
             
-            isHandbookOpen = true;  // フラグ設定
+            isHandbookOpen = true;
             
             updateHandbookContent();
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(0)';
             panel.style.pointerEvents = 'auto';
             
-            // スマホのみ：背景（マップ＆キャンバス）を完全に無効化
-            if (isSmartphone()) {
-                const mapView = document.getElementById('map-view');
-                const starfield = document.getElementById('starfield');
-                const bhCanvas = document.getElementById('bhCanvas');
-                
-                if (mapView) {
-                    mapView.style.pointerEvents = 'none';
-                    mapView.onclick = () => closeHandbook();
-                }
-                if (starfield) starfield.style.pointerEvents = 'none';
-                if (bhCanvas) bhCanvas.style.pointerEvents = 'none';
-            }
-            
             initModalScroll(panel);
         }
 
         function closeHandbook() {
-            isHandbookOpen = false;  // フラグ解除（最初に設定）
+            isHandbookOpen = false;
             
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(100%)';
             panel.style.pointerEvents = 'none';
-            
-            // 背景を復帰
-            const mapView = document.getElementById('map-view');
-            const starfield = document.getElementById('starfield');
-            const bhCanvas = document.getElementById('bhCanvas');
-            
-            if (mapView) {
-                mapView.style.pointerEvents = 'auto';
-                mapView.onclick = null;
-            }
-            if (starfield) starfield.style.pointerEvents = 'auto';
-            if (bhCanvas) bhCanvas.style.pointerEvents = 'auto';
         }
 
         function updateHandbookContent() {
@@ -4399,10 +4296,7 @@
             document.getElementById('step-create-btn').addEventListener('click', createPlanet);
 
             // 宇宙手帳
-            document.getElementById('close-handbook-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                closeHandbook();
-            });
+            document.getElementById('close-handbook-btn').addEventListener('click', closeHandbook);
             document.getElementById('handbook-create-btn').addEventListener('click', () => {
                 closeHandbook();
                 openCreationFlow();
