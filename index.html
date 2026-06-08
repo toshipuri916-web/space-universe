@@ -1602,6 +1602,7 @@
             color: PLANET_COLORS[Math.floor(Math.random() * PLANET_COLORS.length)]
         };
         let isPlacingPlanet = false;
+        let isHandbookOpen = false;  // 手帳が開いているか
 
         /* ═══════════════════════════════════════════════════════════════
            ユーティリティ関数
@@ -3896,6 +3897,8 @@
                 return;
             }
             
+            isHandbookOpen = true;  // フラグ設定
+            
             updateHandbookContent();
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(0)';
@@ -3919,6 +3922,8 @@
         }
 
         function closeHandbook() {
+            isHandbookOpen = false;  // フラグ解除
+            
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(100%)';
             panel.style.pointerEvents = 'none';
@@ -4204,8 +4209,7 @@
         // タッチスクロール（ドラッグ代替）
         document.addEventListener('touchstart', (e) => {
             // 手帳が開いている場合は、マップ操作をスキップ
-            const handbookPanel = document.getElementById('handbook-panel');
-            if (handbookPanel && handbookPanel.style.transform === 'translateX(0)') {
+            if (isHandbookOpen) {
                 e.preventDefault();
                 return;
             }
@@ -4221,8 +4225,7 @@
 
         document.addEventListener('touchmove', (e) => {
             // 手帳が開いている場合は、マップ操作をスキップ
-            const handbookPanel = document.getElementById('handbook-panel');
-            if (handbookPanel && handbookPanel.style.transform === 'translateX(0)') {
+            if (isHandbookOpen) {
                 e.preventDefault();
                 return;
             }
