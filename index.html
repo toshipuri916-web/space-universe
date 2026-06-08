@@ -3886,6 +3886,10 @@
            宇宙手帳
            ═══════════════════════════════════════════════════════════════ */
 
+        function isSmartphone() {
+            return window.innerWidth < 768 || window.matchMedia("(hover: none)").matches;
+        }
+        
         function openHandbook() {
             if (!currentUser) {
                 showNotification('⚠ ログインが必要です', 'warning');
@@ -3896,6 +3900,17 @@
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(0)';
             panel.style.pointerEvents = 'auto';
+            
+            // スマホのみ：背景マップを無効化
+            if (isSmartphone()) {
+                const mapView = document.getElementById('map-view');
+                if (mapView) {
+                    mapView.style.pointerEvents = 'none';
+                    // マップタップで手帳を閉じる
+                    mapView.onclick = () => closeHandbook();
+                }
+            }
+            
             initModalScroll(panel);
         }
 
@@ -3903,6 +3918,13 @@
             const panel = document.getElementById('handbook-panel');
             panel.style.transform = 'translateX(100%)';
             panel.style.pointerEvents = 'none';
+            
+            // 背景マップを復帰
+            const mapView = document.getElementById('map-view');
+            if (mapView) {
+                mapView.style.pointerEvents = 'auto';
+                mapView.onclick = null;  // イベントリスナー削除
+            }
         }
 
         function updateHandbookContent() {
