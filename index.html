@@ -1404,11 +1404,12 @@
                 }, { passive: true });
                 
                 element.addEventListener('touchmove', (e) => {
+                    e.preventDefault();  // 重要：これでスクロール を乗っ取る
                     const touchCurrentY = e.touches[0].clientY;
                     const deltaY = touchStartY - touchCurrentY;
                     element.scrollTop += deltaY;
                     touchStartY = touchCurrentY;
-                }, { passive: true });
+                }, { passive: false });  // passive: false で preventDefault() が効く
             });
         }
         
