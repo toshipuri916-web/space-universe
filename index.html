@@ -918,6 +918,7 @@
                     <button id="shine-btn" style="flex: 1; min-width: 80px; padding: 10px; background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s;">✨ 輝かせる</button>
                     <button id="invade-btn" style="flex: 1; min-width: 80px; padding: 10px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s; display: none;">⚔️ 侵略</button>
                     <button id="post-btn" style="flex: 1; min-width: 80px; padding: 10px; background: rgba(200,150,255,0.15); border: 1px solid rgba(200,150,255,0.4); color: #dd88ff; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s; display: none;">✏️ 投稿</button>
+                    <button id="destroy-btn" style="flex: 1; min-width: 80px; padding: 10px; background: rgba(255,80,80,0.15); border: 1px solid rgba(255,80,80,0.4); color: #ff5555; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.2s; display: none;">🔥 破壊</button>
                 </div>
                 
                 <!-- 閉じるボタン -->
@@ -2101,6 +2102,15 @@
                 postBtn.style.display = 'none';
             }
             
+            // 破壊ボタンの表示制御（テスト用：誰でも破壊可能）
+            const destroyBtn = document.getElementById('destroy-btn');
+            if (currentUser) {
+                destroyBtn.style.display = 'inline-block';
+                destroyBtn.onclick = () => confirmDestroyPlanet(planet);
+            } else {
+                destroyBtn.style.display = 'none';
+            }
+            
             // モーダル表示
             const modal = document.getElementById('planet-detail-modal');
             modal.style.display = 'flex';
@@ -2674,7 +2684,48 @@
                 });
         }
         
-        function evaluateContent(contentId, type) {
+        function confirmDestroyPlanet(planet) {
+            if (!confirm(`🔥 「${planet.name}」を破壊してもよろしいですか？\nコンテンツは「文明の軌跡」として保存されます。`)) {
+                return;
+            }
+            destroyPlanet(planet.id);
+        }
+        
+        function destroyPlanet(planetId) {
+            // 1. コンテンツの planet_id を NULL に変更（軌跡化）
+            supabaseClient
+                .from('contents')
+                .update({ planet_id: null })
+                .eq('planet_id', planetId)
+                .then(({ error: updateError }) => {
+                    if (updateError) {
+                        console.error('コンテンツ更新エラー:', updateError);
+                        showNotification(`⚠ 破壊に失敗しました: ${updateError.message}`, 'error');
+                        return;
+                    }
+                    
+                    // 2. 惑星を削除
+                    supabaseClient
+                        .from('planets')
+                        .delete()
+                        .eq('id', planetId)
+                        .then(({ error: deleteError }) => {
+                            if (deleteError) {
+                                console.error('惑星削除エラー:', deleteError);
+                                showNotification(`⚠ 破壊に失敗しました: ${deleteError.message}`, 'error');
+                                return;
+                            }
+                            
+                            showNotification('💥 惑星が破壊されました。文明の軌跡は宇宙手帳に保存されています。', 'success');
+                            
+                            // 詳細パネルを閉じる
+                            closeModal('planet-detail-modal');
+                            
+                            // マップを再描画
+                            loadPlanets();
+                        });
+                });
+        }
             if (!IS_SUPABASE_ENABLED || !currentUser) {
                 showNotification('⚠ ログインが必要です', 'warning');
                 return;
