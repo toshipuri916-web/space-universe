@@ -968,13 +968,13 @@
                 </div>
                 <div class="modal-body">
                     <!-- ログインフォーム -->
-                    <div class="login-form">
+                    <form class="login-form" onsubmit="return false;">
                         <input type="email" id="login-email" placeholder="メールアドレス" class="input-field">
                         <input type="password" id="login-password" placeholder="パスワード" class="input-field">
-                        <button id="login-email-btn" class="login-btn">メールでログイン</button>
-                        <button id="login-google-btn" class="login-btn google-btn">Google でログイン</button>
-                        <button id="open-register-modal-btn" style="padding: 10px; background: transparent; border: none; color: rgba(100,180,255,0.7); font-size: 12px; cursor: pointer; font-family: 'Courier New', monospace; text-decoration: underline;">アカウント登録はこちら →</button>
-                    </div>
+                        <button type="button" id="login-email-btn" class="login-btn">メールでログイン</button>
+                        <button type="button" id="login-google-btn" class="login-btn google-btn">Google でログイン</button>
+                        <button type="button" id="open-register-modal-btn" style="padding: 10px; background: transparent; border: none; color: rgba(100,180,255,0.7); font-size: 12px; cursor: pointer; font-family: 'Courier New', monospace; text-decoration: underline;">アカウント登録はこちら →</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -988,14 +988,14 @@
                 </div>
                 <div class="modal-body">
                     <!-- 登録フォーム -->
-                    <div class="login-form">
+                    <form class="login-form" onsubmit="return false;">
                         <input type="text" id="register-username" placeholder="ユーザー名" class="input-field">
                         <input type="email" id="register-email" placeholder="メールアドレス" class="input-field">
                         <input type="password" id="register-password" placeholder="パスワード（8文字以上）" class="input-field">
                         <input type="password" id="register-password-confirm" placeholder="パスワード（確認）" class="input-field">
-                        <button id="register-btn" class="login-btn">新規登録</button>
-                        <button id="back-to-login-btn" style="padding: 10px; background: transparent; border: none; color: rgba(100,180,255,0.7); font-size: 12px; cursor: pointer; font-family: 'Courier New', monospace; text-decoration: underline;">← ログインに戻る</button>
-                    </div>
+                        <button type="button" id="register-btn" class="login-btn">新規登録</button>
+                        <button type="button" id="back-to-login-btn" style="padding: 10px; background: transparent; border: none; color: rgba(100,180,255,0.7); font-size: 12px; cursor: pointer; font-family: 'Courier New', monospace; text-decoration: underline;">← ログインに戻る</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1342,6 +1342,28 @@
             
             <!-- 閉じるボタン -->
             <button id="comments-modal-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: rgba(255,255,255,0.6); font-size: 28px; cursor: pointer; transition: all 0.2s;">×</button>
+        </div>
+    </div>
+
+    <!-- 文明の軌跡モーダル -->
+    <div id="traces-modal" class="hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 102; padding: 20px;">
+        <div style="max-width: 600px; width: 100%; height: 90vh; background: rgba(0,10,30,0.95); border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; display: flex; flex-direction: column; position: relative;">
+            
+            <!-- ヘッダー -->
+            <div style="padding: 20px; border-bottom: 1px solid rgba(255,215,0,0.2); background: rgba(255,215,0,0.05);">
+                <div style="font-size: 16px; font-weight: bold; color: #ffd700;">🌟 文明の軌跡</div>
+                <div style="font-size: 12px; color: rgba(255,215,0,0.6); margin-top: 6px;">この文明が残した記録</div>
+            </div>
+            
+            <!-- コンテンツリスト -->
+            <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+                <div id="traces-modal-list" style="display: flex; flex-direction: column; gap: 15px; overflow-y: auto; flex: 1; min-height: 0;">
+                    <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">読み込み中...</div>
+                </div>
+            </div>
+            
+            <!-- 閉じるボタン -->
+            <button id="traces-modal-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: rgba(255,255,255,0.6); font-size: 28px; cursor: pointer; transition: all 0.2s;">×</button>
         </div>
     </div>
 
@@ -2306,6 +2328,8 @@
         function openCommentsModal(content, explorerName) {
             const modal = document.getElementById('comments-modal');
             
+            console.log('openCommentsModal:', { content, planet_id: content.planet_id });  // デバッグ
+            
             // コンテンツ情報を表示
             document.getElementById('comments-modal-title').textContent = content.title;
             
@@ -2331,6 +2355,18 @@
             // コメント入力フィールド初期化
             document.getElementById('comments-modal-input').value = '';
             
+            // 軌跡（planet_id = NULL）の場合はコメント入力を非表示
+            const isTrace = content.planet_id === null;
+            const commentFormDiv = document.getElementById('comments-modal-input').parentElement;
+            
+            if (isTrace) {
+                // 軌跡の場合：コメント入力フォーム全体を非表示
+                commentFormDiv.style.display = 'none';
+            } else {
+                // 通常のコンテンツ：コメント入力フォーム全体を表示
+                commentFormDiv.style.display = 'block';
+            }
+            
             // コメント一覧を読み込む
             loadCommentsModalComments(content.id);
             
@@ -2345,6 +2381,83 @@
             // モーダル表示
             modal.style.display = 'flex';
             initModalScroll(modal);
+        }
+        
+        function openTracesModal() {
+            const modal = document.getElementById('traces-modal');
+            
+            console.log('openTracesModal 開始');
+            
+            // 軌跡コンテンツを取得（planet_id = NULL）
+            supabaseClient
+                .from('contents')
+                .select('id, title, body, url, created_at, good_count, bad_count, explorer_id, planet_id')  // planet_id を追加
+                .is('planet_id', null)  // NULL 判定は .is() を使用
+                .eq('explorer_id', currentUser.userId)
+                .order('created_at', { ascending: false })
+                .then(async ({ data: traces, error }) => {
+                    console.log('モーダル用軌跡取得:', { traces, error });
+                    
+                    if (error) {
+                        console.error('軌跡取得エラー:', error);
+                        document.getElementById('traces-modal-list').innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 12px;">軌跡の読み込みに失敗しました</div>';
+                        return;
+                    }
+                    
+                    if (!traces || traces.length === 0) {
+                        console.log('軌跡がありません');
+                        document.getElementById('traces-modal-list').innerHTML = '<div style="text-align: center; color: rgba(255,215,0,0.5); font-size: 12px;">まだ文明の軌跡がありません</div>';
+                    } else {
+                        console.log('軌跡を表示開始:', traces.length);
+                        
+                        const listDiv = document.getElementById('traces-modal-list');
+                        console.log('traces-modal-list 要素:', listDiv);
+                        
+                        // 各コンテンツのコメントを取得
+                        let tracesHtml = '';
+                        for (const content of traces) {
+                            const { data: comments = [] } = await supabaseClient
+                                .from('comments')
+                                .select('id, text')
+                                .eq('content_id', content.id);
+                            
+                            const date = new Date(content.created_at);
+                            const dateStr = date.toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                            
+                            tracesHtml += `
+                                <div style="background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,215,0,0.15)'" onmouseout="this.style.background='rgba(255,215,0,0.08)'" onclick="openCommentsModal(${JSON.stringify(content).replace(/"/g, '&quot;')}, '${currentUser.username}'); closeModal('traces-modal');">
+                                    <div style="color: #ffd700; font-size: 12px; font-weight: bold; margin-bottom: 6px;">${content.title}</div>
+                                    <div style="color: rgba(255,255,255,0.8); font-size: 11px; margin-bottom: 8px; line-height: 1.4;">${content.body}</div>
+                                    <div style="font-size: 10px; color: rgba(255,215,0,0.6); margin-bottom: 8px;">
+                                        ${dateStr} | 👍 ${content.good_count} | 👎 ${content.bad_count}
+                                    </div>
+                                    ${comments && comments.length > 0 ? `
+                                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,215,0,0.1);">
+                                            <div style="font-size: 10px; font-weight: bold; color: rgba(255,215,0,0.7); margin-bottom: 6px;">💬 コメント (${comments.length})</div>
+                                            ${comments.map(c => `
+                                                <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-bottom: 4px; padding-left: 8px; border-left: 2px solid rgba(255,215,0,0.3);">
+                                                    ${c.text}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }
+                        
+                        console.log('HTML 追加完了');
+                        document.getElementById('traces-modal-list').innerHTML = tracesHtml;
+                    }
+                });
+            
+            // 閉じるボタン
+            document.getElementById('traces-modal-close').onclick = () => closeModal('traces-modal');
+            
+            // モーダル表示
+            modal.style.display = 'flex';
+            initModalScroll(modal);
+            
+            console.log('openTracesModal 完了');
         }
         
         function loadCommentsModalComments(contentId) {
@@ -2722,10 +2835,12 @@
                             closeModal('planet-detail-modal');
                             
                             // マップを再描画
-                            loadPlanets();
+                            loadAllPlanets();
                         });
                 });
         }
+        
+        function evaluateContent(contentId, type) {
             if (!IS_SUPABASE_ENABLED || !currentUser) {
                 showNotification('⚠ ログインが必要です', 'warning');
                 return;
@@ -3899,8 +4014,10 @@
             
             const listDiv = document.getElementById('handbook-list');
             
+            // 所有惑星セクション
+            let planetSection = '';
             if (userPlanets.length === 0) {
-                listDiv.innerHTML = `
+                planetSection = `
                     <div style="text-align: center; padding: 40px 20px; color: rgba(100, 150, 255, 0.5);">
                         <p style="margin-bottom: 16px;">まだ惑星がありません</p>
                         <p style="font-size: 12px; color: rgba(100, 150, 255, 0.4);">
@@ -3908,26 +4025,64 @@
                         </p>
                     </div>
                 `;
-                return;
+            } else {
+                planetSection = userPlanets.map((planet, idx) => `
+                    <div style="background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 10px; padding: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.15)'" onmouseout="this.style.background='rgba(100,180,255,0.08)'" onclick="jumpToPlanetCoord(${planet.gridX}, ${planet.gridY})">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <div style="width: 20px; height: 20px; background: ${planet.color}; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></div>
+                            <div style="color: #fff; font-size: 12px; font-weight: bold;">${planet.name}</div>
+                        </div>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 8px;">
+                            📍 ${gridToCoordID(planet.gridX, planet.gridY)} | 👥 人口：${planet.population.toLocaleString()}
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button onclick="openPlanetDetail(userPlanets[${idx}])" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">詳細</button>
+                            <button onclick="openPostModal(userPlanets[${idx}])" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(200,150,255,0.15); border: 1px solid rgba(200,150,255,0.4); color: #dd88ff; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">✏️ 投稿</button>
+                            <button onclick="movePopulationToFleet(${idx})" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(100,200,100,0.15); border: 1px solid rgba(100,200,100,0.4); color: #88dd88; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">🚀 移動</button>
+                            <button onclick="deletePlanetFromHandbook(${idx})" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">削除</button>
+                        </div>
+                    </div>
+                `).join('');
             }
             
-            listDiv.innerHTML = userPlanets.map((planet, idx) => `
-                <div style="background: rgba(100,180,255,0.08); border: 1px solid rgba(100,180,255,0.3); border-radius: 10px; padding: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(100,180,255,0.15)'" onmouseout="this.style.background='rgba(100,180,255,0.08)'" onclick="jumpToPlanetCoord(${planet.gridX}, ${planet.gridY})">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <div style="width: 20px; height: 20px; background: ${planet.color}; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);"></div>
-                        <div style="color: #fff; font-size: 12px; font-weight: bold;">${planet.name}</div>
-                    </div>
-                    <div style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 8px;">
-                        📍 ${gridToCoordID(planet.gridX, planet.gridY)} | 👥 人口：${planet.population.toLocaleString()}
-                    </div>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                        <button onclick="openPlanetDetail(userPlanets[${idx}])" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(100,180,255,0.15); border: 1px solid rgba(100,180,255,0.4); color: #88ccff; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">詳細</button>
-                        <button onclick="openPostModal(userPlanets[${idx}])" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(200,150,255,0.15); border: 1px solid rgba(200,150,255,0.4); color: #dd88ff; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">✏️ 投稿</button>
-                        <button onclick="movePopulationToFleet(${idx})" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(100,200,100,0.15); border: 1px solid rgba(100,200,100,0.4); color: #88dd88; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">🚀 移動</button>
-                        <button onclick="deletePlanetFromHandbook(${idx})" style="flex: 1; min-width: 60px; padding: 6px; background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.4); color: #ff8888; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s;">削除</button>
-                    </div>
-                </div>
-            `).join('');
+            // 最初に惑星セクションを表示
+            listDiv.innerHTML = planetSection;
+            
+            console.log('currentUser:', currentUser);  // デバッグ
+            
+            // 文明の軌跡ボタン（非同期）
+            supabaseClient
+                .from('contents')
+                .select('id, explorer_id')  // explorer_id も取得
+                .is('planet_id', null)  // NULL 判定は .is() を使用
+                .eq('explorer_id', currentUser.userId)  // 自分の軌跡のみ
+                .then(({ data: traces, error }) => {
+                    console.log('軌跡取得:', { traces, error, userId: currentUser.userId });  // デバッグ
+                    
+                    if (error || !traces || traces.length === 0) {
+                        console.log('軌跡がありません:', traces?.length);
+                        return;  // 軌跡がない場合は何もしない
+                    }
+                    
+                    console.log('軌跡ボタンを追加:', traces.length);
+                    
+                    // 軌跡ボタンを作成・追加
+                    const traceButton = document.createElement('button');
+                    traceButton.onclick = openTracesModal;
+                    traceButton.style.width = '100%';
+                    traceButton.style.padding = '12px';
+                    traceButton.style.background = 'rgba(255,215,0,0.15)';
+                    traceButton.style.border = '1px solid rgba(255,215,0,0.4)';
+                    traceButton.style.color = '#ffd700';
+                    traceButton.style.borderRadius = '8px';
+                    traceButton.style.cursor = 'pointer';
+                    traceButton.style.fontSize = '13px';
+                    traceButton.style.fontWeight = 'bold';
+                    traceButton.style.marginTop = '15px';
+                    traceButton.textContent = `🌟 文明の軌跡 (${traces.length})`;
+                    
+                    listDiv.appendChild(traceButton);
+                });
         }
 
         function deletePlanetFromHandbook(idx) {
